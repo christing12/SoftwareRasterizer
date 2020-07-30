@@ -1,0 +1,37 @@
+{
+    "metadata": {
+        "type": "scene",
+        "name": "fire_hydrant"
+    },
+
+    "camera": {
+        "position": [ 0.0, 0.0, 3.0],
+        "rotation": [ 0.0, 0.0, 0.0]
+    },
+
+    "renderObjects": [
+        {
+            "position": [0.0, -0.5, 0.0],
+            "rotation": [0.0, 0.0, 0.0],
+            "scale": [1.0, 1.0, 1.0],
+            "mesh": "data/obj/firehydrant_mesh.obj",
+            "material": {
+                "type": "PBR",
+                "albedo" : "data/textures/firehydrant_albedo.png",
+                "normal": "data/textures/firehydrant_normal.png",
+                "AO": "data/textures/firehydrant_ao.png",
+                "metal": "data/textures/firehydrant_metal.png",
+                "rough": "data/textures/firehydrant_rough.png"
+            }
+        }
+    ],
+
+    "lights": [
+        {
+            "position": [1.0, 0.0, 0.0],
+            "color": [1.0, 1.0, 1.0]
+        }
+    ]
+
+    
+}

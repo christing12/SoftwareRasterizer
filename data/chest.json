@@ -1,0 +1,38 @@
+{
+    "metadata": {
+        "type": "scene",
+        "name": "chest",
+        "filepath": "../data/"
+    },
+
+    "camera": {
+        "position": [ 0.0, 0.0, 3.0],
+        "rotation": [ 0.0, 0.0, 0.0]
+    },
+
+    "renderObjects": [
+        {
+            "position": [0.0, -0.5, 0.0],
+            "rotation": [0.0, 0.0, 0.0],
+            "scale": [1.0, 1.0, 1.0],
+            "mesh": "../data/obj/Chest.obj",
+            "material": {
+                "type": "PBR",
+                "albedo" : "../data/textures/chest_albedo.png",
+                "normal": "../data/textures/chest_normal.png",
+                "AO": "../data/textures/chest_ao.png",
+                "metal": "../data/textures/chest_metalness.png",
+                "rough": "../data/textures/chest_roughness.png"
+            }
+        }
+    ],
+
+    "lights": [
+        {
+            "position": [1.0, 0.0, 0.0],
+            "color": [1.0, 1.0, 1.0]
+        }
+    ]
+
+    
+}
