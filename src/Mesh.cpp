@@ -78,9 +78,7 @@ void Mesh::LoadFile(const char* filename) {
 		m_vertices.push_back(v);
 	}
 	CalculateFacetNormals();
-
 	CalculateTangentSpace();
-
 }
 
 

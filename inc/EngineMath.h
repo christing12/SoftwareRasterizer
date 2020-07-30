@@ -395,18 +395,11 @@ public:
 class Matrix4
 {
 public:
-    union
-    {
-        __m128 rows[4];
-        float mat[4][4];
-    };
+    float mat[4][4];
 
     Matrix4()
     {
-        rows[0] = _mm_setzero_ps();
-        rows[1] = _mm_setzero_ps();
-        rows[2] = _mm_setzero_ps();
-        rows[3] = _mm_setzero_ps();
+        *this = Matrix4::Identity;
     }
 
     explicit Matrix4(const float inMat[4][4])
@@ -414,48 +407,116 @@ public:
         memcpy(mat, inMat, 16 * sizeof(float));
     }
 
-    explicit Matrix4(const __m128 inRows[4])
+    explicit Matrix4(const __m128 rows[4])
     {
-        rows[0] = inRows[0];
-        rows[1] = inRows[1];
-        rows[2] = inRows[2];
-        rows[3] = inRows[3];
-    }
-
-    // Cast to a const float pointer
-    const float* GetAsFloatPtr() const
-    {
-        return &mat[0][0];
+        memcpy(mat, rows, 16 * sizeof(float));
     }
 
     // Matrix multiplication (a * b)
     friend Matrix4 operator*(const Matrix4& a, const Matrix4& b)
     {
-        // transpose b
-        __m128 bT[4];
-        __m128 tmp0 = _mm_shuffle_ps(b.rows[0], b.rows[1], 0x44);
-        __m128 tmp2 = _mm_shuffle_ps(b.rows[0], b.rows[1], 0xee);
-        __m128 tmp1 = _mm_shuffle_ps(b.rows[2], b.rows[3], 0x44);
-        __m128 tmp3 = _mm_shuffle_ps(b.rows[2], b.rows[3], 0xee);
-        bT[0] = _mm_shuffle_ps(tmp0, tmp1, 0x88);
-        bT[1] = _mm_shuffle_ps(tmp0, tmp1, 0xdd);
-        bT[2] = _mm_shuffle_ps(tmp2, tmp3, 0x88);
-        bT[3] = _mm_shuffle_ps(tmp2, tmp3, 0xdd);
+        Matrix4 retVal;
+        // row 0
+        retVal.mat[0][0] =
+            a.mat[0][0] * b.mat[0][0] +
+            a.mat[0][1] * b.mat[1][0] +
+            a.mat[0][2] * b.mat[2][0] +
+            a.mat[0][3] * b.mat[3][0];
 
-        __m128 rows[4];
-        for (int i = 0; i < 4; i++)
-        {
-            rows[i] = _mm_add_ps(
-                _mm_add_ps(_mm_dp_ps(a.rows[i], bT[0], 0xF1),
-                    _mm_dp_ps(a.rows[i], bT[1], 0xF2)
-                ),
-                _mm_add_ps(_mm_dp_ps(a.rows[i], bT[2], 0xF4),
-                    _mm_dp_ps(a.rows[i], bT[3], 0xF8)
-                )
-            );
-        }
+        retVal.mat[0][1] =
+            a.mat[0][0] * b.mat[0][1] +
+            a.mat[0][1] * b.mat[1][1] +
+            a.mat[0][2] * b.mat[2][1] +
+            a.mat[0][3] * b.mat[3][1];
 
-        return Matrix4(rows);
+        retVal.mat[0][2] =
+            a.mat[0][0] * b.mat[0][2] +
+            a.mat[0][1] * b.mat[1][2] +
+            a.mat[0][2] * b.mat[2][2] +
+            a.mat[0][3] * b.mat[3][2];
+
+        retVal.mat[0][3] =
+            a.mat[0][0] * b.mat[0][3] +
+            a.mat[0][1] * b.mat[1][3] +
+            a.mat[0][2] * b.mat[2][3] +
+            a.mat[0][3] * b.mat[3][3];
+
+        // row 1
+        retVal.mat[1][0] =
+            a.mat[1][0] * b.mat[0][0] +
+            a.mat[1][1] * b.mat[1][0] +
+            a.mat[1][2] * b.mat[2][0] +
+            a.mat[1][3] * b.mat[3][0];
+
+        retVal.mat[1][1] =
+            a.mat[1][0] * b.mat[0][1] +
+            a.mat[1][1] * b.mat[1][1] +
+            a.mat[1][2] * b.mat[2][1] +
+            a.mat[1][3] * b.mat[3][1];
+
+        retVal.mat[1][2] =
+            a.mat[1][0] * b.mat[0][2] +
+            a.mat[1][1] * b.mat[1][2] +
+            a.mat[1][2] * b.mat[2][2] +
+            a.mat[1][3] * b.mat[3][2];
+
+        retVal.mat[1][3] =
+            a.mat[1][0] * b.mat[0][3] +
+            a.mat[1][1] * b.mat[1][3] +
+            a.mat[1][2] * b.mat[2][3] +
+            a.mat[1][3] * b.mat[3][3];
+
+        // row 2
+        retVal.mat[2][0] =
+            a.mat[2][0] * b.mat[0][0] +
+            a.mat[2][1] * b.mat[1][0] +
+            a.mat[2][2] * b.mat[2][0] +
+            a.mat[2][3] * b.mat[3][0];
+
+        retVal.mat[2][1] =
+            a.mat[2][0] * b.mat[0][1] +
+            a.mat[2][1] * b.mat[1][1] +
+            a.mat[2][2] * b.mat[2][1] +
+            a.mat[2][3] * b.mat[3][1];
+
+        retVal.mat[2][2] =
+            a.mat[2][0] * b.mat[0][2] +
+            a.mat[2][1] * b.mat[1][2] +
+            a.mat[2][2] * b.mat[2][2] +
+            a.mat[2][3] * b.mat[3][2];
+
+        retVal.mat[2][3] =
+            a.mat[2][0] * b.mat[0][3] +
+            a.mat[2][1] * b.mat[1][3] +
+            a.mat[2][2] * b.mat[2][3] +
+            a.mat[2][3] * b.mat[3][3];
+
+        // row 3
+        retVal.mat[3][0] =
+            a.mat[3][0] * b.mat[0][0] +
+            a.mat[3][1] * b.mat[1][0] +
+            a.mat[3][2] * b.mat[2][0] +
+            a.mat[3][3] * b.mat[3][0];
+
+        retVal.mat[3][1] =
+            a.mat[3][0] * b.mat[0][1] +
+            a.mat[3][1] * b.mat[1][1] +
+            a.mat[3][2] * b.mat[2][1] +
+            a.mat[3][3] * b.mat[3][1];
+
+        retVal.mat[3][2] =
+            a.mat[3][0] * b.mat[0][2] +
+            a.mat[3][1] * b.mat[1][2] +
+            a.mat[3][2] * b.mat[2][2] +
+            a.mat[3][3] * b.mat[3][2];
+
+        retVal.mat[3][3] =
+            a.mat[3][0] * b.mat[0][3] +
+            a.mat[3][1] * b.mat[1][3] +
+            a.mat[3][2] * b.mat[2][3] +
+            a.mat[3][3] * b.mat[3][3];
+
+        return retVal;
     }
 
     Matrix4& operator*=(const Matrix4& right)
@@ -494,17 +555,39 @@ public:
     // Extract the scale component from the matrix
     Vector3 GetScale() const
     {
-        __m128 x = _mm_dp_ps(rows[0], rows[0], 0x71);
-        __m128 y = _mm_dp_ps(rows[1], rows[1], 0x72);
-        __m128 z = _mm_dp_ps(rows[2], rows[2], 0x74);
-        return Vector3(_mm_sqrt_ps(_mm_add_ps(_mm_add_ps(x, y), z)));
+        Vector3 retVal;
+        retVal.x = Vector3(mat[0][0], mat[0][1], mat[0][2]).Length();
+        retVal.y = Vector3(mat[1][0], mat[1][1], mat[1][2]).Length();
+        retVal.z = Vector3(mat[2][0], mat[2][1], mat[2][2]).Length();
+        return retVal;
     }
 
     // Transpose this matrix
     void Transpose()
     {
-        _MM_TRANSPOSE4_PS(rows[0], rows[1], rows[2], rows[3]);
-    }
+        float temp[4][4];
+
+        temp[0][0] = mat[0][0];
+        temp[0][1] = mat[1][0];
+        temp[0][2] = mat[2][0];
+        temp[0][3] = mat[3][0];
+
+        temp[1][0] = mat[0][1];
+        temp[1][1] = mat[1][1];
+        temp[1][2] = mat[2][1];
+        temp[1][3] = mat[3][1];
+
+        temp[2][0] = mat[0][2];
+        temp[2][1] = mat[1][2];
+        temp[2][2] = mat[2][2];
+        temp[2][3] = mat[3][2];
+
+        temp[3][0] = mat[0][3];
+        temp[3][1] = mat[1][3];
+        temp[3][2] = mat[2][3];
+        temp[3][3] = mat[3][3];
+
+        memcpy(mat, temp, 16 * sizeof(float));    }
 
     // Transpose the provided matrix
     friend Matrix4 Transpose(const Matrix4& inMat)

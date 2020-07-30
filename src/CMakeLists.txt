@@ -20,3 +20,5 @@ set(TARGET SoftwareRasterizer)
 add_executable(${TARGET} ${SOURCES})
 
 target_link_libraries(${TARGET} ${SDL2_LIBRARY})
+
+install(TARGETS ${TARGET} RUNTIME DESTINATION ${BIN_DIR})

@@ -14,7 +14,7 @@ bool RenderManager::Init(int w, int h) {
 	}
 	std::cout << "Render Manager being initted" << std::endl;
 	g_displayManager = DisplayManager::Get();
-	m_currScene = new Scene("../../data/chest.json");
+	m_currScene = new Scene("../data/chest.json");
 	return true;
 }
 
@@ -36,6 +36,5 @@ void RenderManager::Render() {
 	for (RenderObj* obj : objs) {
 		m_renderer->DrawObj(obj, m_currScene->GetCamera(), wireframe);
 	}
-
 	g_displayManager->UpdateDisplay(m_renderer->GetFrameBuffer());
 }

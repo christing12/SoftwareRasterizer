@@ -8,7 +8,7 @@
 
 #include <iostream>
 #include <algorithm>
-// #include <omp.h>
+ #include <omp.h>
 
 
 
@@ -100,7 +100,7 @@ void Renderer::DrawObj(RenderObj* obj, Camera* cam, bool wireframe) {
 		private(shader) would make the shader inside the region random
 
 	*/
-	// #pragma omp parallel for firstprivate(shader) schedule(dynamic)
+	#pragma omp parallel for firstprivate(shader) schedule(dynamic)
 	for (int i = 0; i < m->NumFaces(); i++) {
 
 		Vertex triangle[3];

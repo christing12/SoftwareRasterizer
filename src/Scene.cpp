@@ -64,11 +64,14 @@ void Scene::LoadScene(const char* filename) {
 			std::string meshFile = obj["mesh"];
 			Mesh* mesh = new Mesh(meshFile.c_str());
 
+
 			Material* mat = GetMaterialFromJSON(obj["material"]);
 			RenderObj* rObj = new RenderObj(mat, mesh);
 			rObj->transform = transMat;
 			AddObj(rObj);
 		}
+
+		std::cout << "DONE WITH OBJECT TEXTURES" << std::endl;
 
 		{
 			size_t numLights = scene["lights"].size();

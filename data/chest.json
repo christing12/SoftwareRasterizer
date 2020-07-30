@@ -18,11 +18,11 @@
             "mesh": "../data/obj/Chest.obj",
             "material": {
                 "type": "PBR",
-                "albedo" : "../../data/textures/chest_albedo.png",
-                "normal": "../../data/textures/chest_normal.png",
-                "AO": "../../data/textures/chest_ao.png",
-                "metal": "../../data/textures/chest_metalness.png",
-                "rough": "../../data/textures/chest_roughness.png"
+                "albedo" : "../data/textures/chest_albedo.png",
+                "normal": "../data/textures/chest_normal.png",
+                "AO": "../data/textures/chest_ao.png",
+                "metal": "../data/textures/chest_metalness.png",
+                "rough": "../data/textures/chest_roughness.png"
             }
         }
     ],
