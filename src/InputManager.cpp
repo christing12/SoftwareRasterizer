@@ -17,6 +17,15 @@ InputManager::~InputManager() {
 	m_prevKeyboardState = nullptr;
 }
 
+void InputManager::Update(float deltaTime) {
+	m_mouseState = SDL_GetMouseState(&m_mouseXPos, &m_mouseYPos);
+}
+
+void InputManager::UpdatePrevInput() {
+	memcpy(m_prevKeyboardState, m_keyboardState, m_keyLen);
+	m_prevMouseState = m_mouseState;
+}
+
 bool InputManager::KeyDown(SDL_Scancode scancode) {
 	return m_keyboardState[scancode];
 }
@@ -29,6 +38,50 @@ bool InputManager::KeyPressed(SDL_Scancode scancode) {
 bool InputManager::KeyReleased(SDL_Scancode scancode) {
 	return !m_keyboardState[scancode] && m_prevKeyboardState[scancode];
 }
+
+// Top left is the origin
+Vector2 InputManager::MousePos() {
+	return Vector2(float(m_mouseXPos), float(m_mouseYPos));
+}
+
+int InputManager::GetMouseMask(MOUSE_BUTTON button) {
+	Uint32 mask = 0;
+	switch (button) {
+	case LEFT:
+		mask = SDL_BUTTON_LMASK;
+		break;
+	case RIGHT:
+		mask = SDL_BUTTON_RMASK;
+		break;
+	case MIDDLE:
+		mask = SDL_BUTTON_MMASK;
+		break;
+	case BACK:
+		mask = SDL_BUTTON_X1MASK;
+		break;
+	case FORWARD:
+		mask = SDL_BUTTON_X2MASK;
+		break;
+	}
+	return mask;
+}
+
+bool InputManager::MouseButtonDown(MOUSE_BUTTON button) {
+	Uint32 mask = GetMouseMask(button);
+	return (m_mouseState & mask);
+}
+
+bool InputManager::MouseButtonPressed(MOUSE_BUTTON button) {
+	Uint32 mask = GetMouseMask(button);
+	return !(m_prevMouseState & mask) && (m_mouseState & mask);
+}
+
+bool InputManager::MouseButtonReleased(MOUSE_BUTTON button) {
+	Uint32 mask = GetMouseMask(button);
+	return (m_prevMouseState & mask) && !(m_mouseState & mask);
+}
+
+
 
 // checking between important engine level events and regular events
 // NOTE: maybe combine handle even with this?
