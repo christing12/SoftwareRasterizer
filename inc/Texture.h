@@ -6,15 +6,20 @@
 
 class Texture {
 public:
+	// identifier for pre-calculations
 	enum TexType {
 		RGB, XYZ, BW
 	};
 	Texture(const char* filename, TexType type = TexType::RGB);
 	~Texture();
 
+	// loads image from filename
 	void Load(const char* filename);
 
+	// samples 3 floats in a row (RGB)
 	Vector3 Sample(float u, float v);
+
+	// samples 1 float (AO, metalness, roughness, etc...)
 	float SampleF(float u, float v);
 	TexType type;
 private:

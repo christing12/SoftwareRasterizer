@@ -5,6 +5,7 @@
 #include "Texture.h"
 #include "Material.h"
 #include "nlohmann/json.hpp"
+#include "InputManager.h"
 
 #include <string>
 #include <fstream>
@@ -14,6 +15,7 @@
 using json = nlohmann::json;
 
 Scene::Scene(const char* filename) {
+	g_inputManager = InputManager::Get();
 	LoadScene(filename);
 }
 
@@ -41,6 +43,7 @@ void Scene::LoadScene(const char* filename) {
 		m_mainCam = new Camera(translation);
 	}
 
+	// parsing all object information
 	{
 		size_t numObjs = scene["renderObjects"].size();
 		for (size_t i = 0; i < numObjs; i++) {
@@ -68,11 +71,10 @@ void Scene::LoadScene(const char* filename) {
 			Material* mat = GetMaterialFromJSON(obj["material"]);
 			RenderObj* rObj = new RenderObj(mat, mesh);
 			rObj->transform = transMat;
-			AddObj(rObj);
+			m_renderObjs.push_back(rObj);
 		}
 
-		std::cout << "DONE WITH OBJECT TEXTURES" << std::endl;
-
+		// parsing the lights in the scene
 		{
 			size_t numLights = scene["lights"].size();
 			for (size_t i = 0; i < numLights; i++) {
@@ -92,19 +94,25 @@ void Scene::LoadScene(const char* filename) {
 }
 
 void Scene::Update(float deltaTime) {
+	if (g_inputManager->MouseButtonPressed(InputManager::MOUSE_BUTTON::LEFT)) {
+		Vector2 mousePos = g_inputManager->MousePos();
+		std::cout << "Mouse Pos: " << mousePos.x << " " << mousePos.y << std::endl;
+	}
+	m_mainCam->Update(deltaTime);
 	for (RenderObj* obj : m_renderObjs) {
 		obj->Update(deltaTime);
 	}
+	FrustumCulling();
 }
 
-void Scene::AddObj(RenderObj* obj) {
-	m_renderObjs.push_back(obj);
+void Scene::FrustumCulling() {
+	for (RenderObj* obj : m_renderObjs) {
+
+	}
 }
 
-void Scene::CreateObj(Mesh* m) {
-	//AddObj(new RenderObj(m));
-}
 
+// Helper function currently not being used
 void Scene::GetTextureFromJSON(Material* mat, std::string key, nlohmann::json jsonObj, std::string type) {
 	auto iter = jsonObj.find(key);
 	if (iter != jsonObj.end()) {

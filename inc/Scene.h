@@ -7,6 +7,7 @@ class Camera;
 class RenderObj;
 class Mesh;
 class Material;
+class InputManager;
 
 struct Light {
 	Vector3 position;
@@ -23,11 +24,13 @@ public:
 	void LoadScene(const char* filename);
 	void Update(float deltaTime);
 
-	void AddObj(RenderObj* obj);
-	void CreateObj(Mesh* m);
 	Camera* GetCamera() { return m_mainCam; }
 	std::vector<RenderObj*>& GetRenderObjs() { return m_renderObjs; }
+
+	void FrustumCulling();
 private:
+	InputManager* g_inputManager;
+
 	Camera* m_mainCam;
 	std::vector<RenderObj*> m_renderObjs;
 	std::vector<Light> m_lights;

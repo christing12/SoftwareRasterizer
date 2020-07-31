@@ -10,6 +10,8 @@ Mesh::Mesh(const char* filename) {
 	LoadFile(filename);
 }
 
+
+// .obj parser (maybe own class / struct?)
 void Mesh::LoadFile(const char* filename) {
 	std::ifstream in;
 	in.open(filename, std::ifstream::in);
@@ -32,23 +34,25 @@ void Mesh::LoadFile(const char* filename) {
 		std::istringstream iss(line);
 		char trash;
 		iss >> key;
+		// vertex pos
 		if (key == "v") {
 			Vector3 v;
 			iss >> v.x >> v.y >> v.z;
 			tempVerts.push_back(v);
 		}
+		// uv coords
 		else if (key == "vt") {
 			Vector3 v;
 			iss >> v.x >> v.y >> v.z;
 			tempUVs.push_back(v);
 		}
+		// vertex normal
 		else if (key == "vn") {
 			Vector3 norm;
 			iss >> norm.x >> norm.y >> norm.z;
 			tempNormals.push_back(norm);
 		}
-
-		//NOTE THE X = VERT INDEX, Y = TEXCOORD IDX, Z NORM IDX
+		// face
 		else if (key == "f") {
 			unsigned int vertexIndex[3], uvIndex[3], normalIndex[3];
 			for (int i = 0; i < 3; i++) {
@@ -82,7 +86,7 @@ void Mesh::LoadFile(const char* filename) {
 }
 
 
-// USED FOR BACKFACE CULLING SO I CAN AVOID CALCULATING IT EVERY FRAME
+// pre-calculates facet normals to save performance on backface culling
 void Mesh::CalculateFacetNormals() {
 	int idx;
 	for (size_t i = 0; i < numFaces; i++) {
@@ -95,6 +99,7 @@ void Mesh::CalculateFacetNormals() {
 	}
 }
 
+// calculates tangent space
 void Mesh::CalculateTangentSpace() {
 	unsigned int numVerts = NumVertices();
 	std::vector<Vector3> tangent(numVerts, Vector3::Zero);
@@ -105,6 +110,8 @@ void Mesh::CalculateTangentSpace() {
 		bitangent[i] = Vector3::Zero;
 	}
 	unsigned int i0;
+	// calculates tangent / bitangent for each face, stores result in each 
+	// vertex to average later and get better results
 	for (int i = 0; i < numFaces; i++) {
 		i0 = i * 3;
 
@@ -131,7 +138,7 @@ void Mesh::CalculateTangentSpace() {
 		bitangent[i0 + 1] += b;
 		bitangent[i0 + 2] += b; 
 	}
-
+	// averages, normalizes, and corrects hand-ness
 	for (unsigned int i = 0; i < numVerts; i++) {
 		Vertex v = m_vertices[i];
 		const Vector3& t = tangent[i];
@@ -156,7 +163,7 @@ const Vector3& Mesh::GetFacetNormal(size_t idx) {
 	return m_faceNormals[idx];
 }
 
-
+// grabs vertex info for each triangle
 void Mesh::GetFace(size_t idx, Vertex triangle[3], Vector3& facetNormal) {
 	size_t index = idx * 3;
 	for (unsigned int i = 0; i < 3; i++) {

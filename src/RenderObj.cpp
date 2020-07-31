@@ -14,9 +14,8 @@ RenderObj::~RenderObj() {
 
 
 void RenderObj::Update(float deltaTime) {
+	/*
 	Vector3 translation = transform.GetTranslation();
 	angle += Math::Pi * rotSpeed;
-	transform = Matrix4::CreateTranslation(translation) * Matrix4::CreateRotationY(angle);
-	/*position -= Vector3::UnitZ * deltaTime;
-	transform = Matrix4::CreateTranslation(position) * Matrix4::CreateRotationY(Math::ToRadians(180.f));*/
+	transform = Matrix4::CreateTranslation(translation) * Matrix4::CreateRotationY(angle); */
 }

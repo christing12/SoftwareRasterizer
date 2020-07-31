@@ -2,6 +2,7 @@
 class Texture;
 class Shader;
 
+// struct to hold texture information
 struct Material {
 	Material(std::string inType) : type(inType) {}
 	

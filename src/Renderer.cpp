@@ -13,7 +13,7 @@
 
 
 
-// Initializing constant colors and other info for debugging / testing
+// static variables initalization
 const SDL_PixelFormat* Renderer::format(SDL_AllocFormat(PIXEL_FORMAT));
 const Uint32 Renderer::white(SDL_MapRGB(Renderer::format, 255, 255, 255));
 
@@ -65,9 +65,13 @@ void Renderer::ClearBuffers() {
 	m_zBuffer->clear();
 }
 
-// Main rendering function
-// Applies vertex shader, transform into raster space, then sends info the diff rendering techniques
-// TECHNIQUES: Rasterization+shading | Wireframe | Vertices
+/*
+	MAIN RENDERING FUNCTION
+	performns Vertex shader (obj->clip space)
+	performns (clip space->NDC->screen space)
+	also backface culling
+	sends it to rasterizer or wireframe renderer
+*/
 void Renderer::DrawObj(RenderObj* obj, Camera* cam, bool wireframe) {
 	Mesh* m = obj->GetMesh();
 	Material* mat = obj->GetMat();
@@ -79,6 +83,7 @@ void Renderer::DrawObj(RenderObj* obj, Camera* cam, bool wireframe) {
 	Matrix4 worldToObj = obj->transform;
 	worldToObj.Invert();
 
+	// Setting up shader uniforms
 	PBRShader shader;
 	shader.MVP = MVP;
 	shader.MV = MV;
@@ -98,7 +103,7 @@ void Renderer::DrawObj(RenderObj* obj, Camera* cam, bool wireframe) {
 	/*
 		I want the shader to 'reset' after each run of vertex->fragment
 		private(shader) would make the shader inside the region random
-
+		dynamic schedule for cases of backface culling
 	*/
 	#pragma omp parallel for firstprivate(shader) schedule(dynamic)
 	for (int i = 0; i < m->NumFaces(); i++) {
@@ -117,7 +122,7 @@ void Renderer::DrawObj(RenderObj* obj, Camera* cam, bool wireframe) {
 			vsResult[j] = shader.VertexShader(v.pos, v.uv, v.normal, v.tangent, j);
 		}
 
-		// CLIP SPACE TO SCREEN SPACE
+		// Clip Space -> Perspective Divide -> Screen Space
 		Triangle screenSpaceVerts;
 		float wVals[3];
 		for (int j = 0; j < 3; j++) {
@@ -235,11 +240,12 @@ BBox Renderer::GetBBox(Triangle& t) {
 }
 
 
-// Main rasterization method(maybe put into own class?)
-// https://stackoverflow.com/questions/24441631/how-exactly-does-opengl-do-perspectively-correct-linear-interpolation#:~:text=Perspective%20correct%20interpolation,-So%20let's%20say&text=This%20gives%20us%20the%20barycentric,by%20extension%2C%20world%20coordinates).
+/*
+	Main rasterization method(maybe put into own class?)
+	https://stackoverflow.com/questions/24441631/how-exactly-does-opengl-do-perspectively-correct-linear-interpolation#:~:text=Perspective%20correct%20interpolation,-So%20let's%20say&text=This%20gives%20us%20the%20barycentric,by%20extension%2C%20world%20coordinates).
+	performs rasterization and frag shader
+*/
 void Renderer::DrawRasterTriangle( Triangle& t, float wVals[3], Shader* shader) {
-	Uint32 col = RandColor();
-
 	// returns the area of the parallelogram formed by two of Triangle t
 	// use as a denominator for bary coord
 	float area = EdgeFunction(t[0], t[1], t[2]);
@@ -250,6 +256,8 @@ void Renderer::DrawRasterTriangle( Triangle& t, float wVals[3], Shader* shader) 
 
 	BBox bbox = GetBBox(t);
 	Vector3 zCoord(t[0].z, t[1].z, t[2].z);
+
+	// setting up linear incrementation of edge-rasterization algorithm
 	float A01 = t[0].y - t[1].y, B01 = t[1].x - t[0].x;
 	float A12 = t[1].y - t[2].y, B12 = t[2].x - t[1].x;
 	float A20 = t[2].y - t[0].y, B20 = t[0].x - t[2].x;
@@ -276,7 +284,7 @@ void Renderer::DrawRasterTriangle( Triangle& t, float wVals[3], Shader* shader) 
 				if ((*m_zBuffer)(x, y) < depth && depth < 1.f) {
 					(*m_zBuffer)(x, y) = depth;
 
-					//perspective correction
+					//perspective correct coordinates
 					weights = bary * recip_w;
 					normalizer = 1.f / (weights.x + weights.y + weights.z);
 					bary = weights * normalizer;
@@ -295,12 +303,6 @@ void Renderer::DrawRasterTriangle( Triangle& t, float wVals[3], Shader* shader) 
 	}
 }
 
-
-Uint32 Renderer::RandColor() {
-	return SDL_MapRGB(g_displayManager->GetPixelFormat(), rand() % 255, rand() % 255, rand() % 255);
-}
-
-
 // front-end culling using facet normals
 bool Renderer::BackfaceCulling(Vertex t[3], const Vector3& faceNormal, const Matrix4& objMat, Camera* c) {
 	Vector3 viewDir = Normalize(Transform(c->cameraPos, objMat) - t[0].pos);
@@ -308,10 +310,16 @@ bool Renderer::BackfaceCulling(Vertex t[3], const Vector3& faceNormal, const Mat
 	return intensity <= 0.f;
 }
 
-
+// Gamma Correct using gamma LUT (assumes rgb: [0, 1])
 Uint32 Renderer::GammaCorrect(Vector3 rgb) {
 	int gR = (int)(Math::Clamp(rgb.x * 255.f, 0.f, 255.f) + 0.5f);
 	int gG = (int)(Math::Clamp(rgb.y * 255.f, 0.f, 255.f) + 0.5f);
 	int gB = (int)(Math::Clamp(rgb.z * 255.f, 0.f, 255.f) + 0.5f);
 	return SDL_MapRGB(format, gammaLUT[gR], gammaLUT[gG], gammaLUT[gB]);
+}
+
+
+// random color for testing
+Uint32 Renderer::RandColor() {
+	return SDL_MapRGB(g_displayManager->GetPixelFormat(), rand() % 255, rand() % 255, rand() % 255);
 }

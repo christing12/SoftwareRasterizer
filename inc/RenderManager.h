@@ -15,6 +15,7 @@ public:
 	void Shutdown();
 	void Update(float deltaTime);
 
+	// eventually to add scene switching
 	Scene* GetCurrScene() { return m_currScene; }
 	void SetCurrScene(Scene* s) { m_currScene = s; }
 

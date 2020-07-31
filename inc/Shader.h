@@ -213,10 +213,6 @@ struct PBRShader : public Shader {
 		return (F0 + (Vector3::One - F0) * std::pow((1.f - HdotV), 5.f));
 	}
 
-
-
-
-
 	Vector3 VertexShader(const Vector3& vert,
 		const Vector3& texelCoords,
 		const Vector3& norm,
@@ -273,8 +269,6 @@ struct PBRShader : public Shader {
 		roughness = rough->SampleF(fragTexels.x, fragTexels.y);
 		AO = ambientO->SampleF(fragTexels.x, fragTexels.y);
 
-
-		// Converting sampled normals from [-1, 1] to [0, 1]
 		normal = normalMap->Sample(fragTexels.x, fragTexels.y);
 		normal.Normalize();
 

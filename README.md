@@ -2,7 +2,7 @@
 
 My implementation of a software renderer for learning purposes! Tried to use very little dependencies
 
-## Features
+### Features
 
 * Cross platform
 * Minimal dependencies

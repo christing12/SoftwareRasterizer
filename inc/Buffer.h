@@ -1,39 +1,42 @@
 #pragma once
 #include <stdio.h>
 #include <iostream>
-// implementation of a templated buffer class for the z-buffer and the frame buffer
-// NOTE: SDL Origin is top-left, Screens imagine it from bottom-left (.obj files)
-// https://www.scratchapixel.com/lessons/3d-basic-rendering/rasterization-practical-implementation
-// NOTE: Pitch is the amount of memory in bytes of each row of the image essentially
-// NOTE: Much simpler to overload ()(int, int) than [][] - per https://stackoverflow.com/questions/6969881/operator-overload
+// implementation of a templated buffer class for the Z-Buffer, Color Buffer, and Texture Buffers
+
+/*
+	NOTE: Much simpler to overload ()(int, int) than [][] 
+	- per https://stackoverflow.com/questions/6969881/operator-overload
+*/
 template <class T>
 struct Buffer {
 public:
 	T* buffer;
-	int pitch, numPixels, width, height;
+	int width, height, pitch;
 
 	Buffer(int w, int h)
 		: width(w)
 		, height(h)
-		, numPixels(w * h)
 		, pitch(w * sizeof(T))
 	{
 		buffer = new T[width * height];
 	}
+
 	~Buffer() {
 		delete buffer;
 	}
 
-	//origin is top left
+	// assumes origin is in the top left
 	T& operator()(int x, int y) {
 		int pos = y * width + x;
 		return buffer[pos];
 	}
 
+	// accessor if index is already precalculated
 	T& operator()(int pos) {
 		return buffer[pos];
 	}
 
+	// probably unneeded, just the option of returning multiple queries of the buffer
 	T* operator()(int x, int y, int len) {
 		T* data = new T[len];
 		int pos = y * width + x;
@@ -43,9 +46,14 @@ public:
 		return data;
 	}
 
+	/*
+		resets the buffer
+		NOTE: there are some issues with memset and float
+		- per https://stackoverflow.com/questions/37555614/memset-on-float-array-does-not-fully-zero-out-array
+	*/
 	void clear() {
 		if (std::is_same<T, float>::value) {
-			for (int i = 0; i < numPixels; i++) {
+			for (int i = 0; i < (width * height); i++) {
 				buffer[i] = 0.0f;
 			}
 		}

@@ -32,7 +32,7 @@ void DisplayManager::Shutdown() {
 	SDL_Quit();
 }
 
-// Swaps the front buffer witht the back buffer / frame buffer / pixel buffer
+// Swaps the front buffer witht the backbuffer and displays it
 void DisplayManager::UpdateDisplay(Buffer<Uint32>* buffer) {
 	SDL_LockSurface(m_surface);
 

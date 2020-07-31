@@ -2,8 +2,6 @@
 #include "EngineMath.h"
 #include <vector>
 
-
-
 class Mesh {
 public:
 	Mesh(const char* filename);
@@ -20,6 +18,8 @@ private:
 	std::vector<Vertex> m_vertices;
 
 	size_t numFaces = 0;
+	
+	// pre-calculation helpers
 	void CalculateFacetNormals();
 	void CalculateTangentSpace();
 };

@@ -8,6 +8,7 @@
 #include "RenderManager.h"
 #include <chrono>
 
+#include <iostream>
 // Separate from the constructor in case the engine needs to restart
 bool Engine::Init() {
 	bool successful = true;
@@ -34,17 +35,23 @@ void Engine::Run() {
 	std::chrono::high_resolution_clock::time_point frameStart = std::chrono::high_resolution_clock::now();
 	float deltaTime = 1.f / 60.f;
 	while (isRunning) {
+		std::chrono::high_resolution_clock::time_point frameEnd;
+		do
+		{
+			frameEnd = std::chrono::high_resolution_clock::now();
+			double duration = (double)std::chrono::duration_cast<std::chrono::nanoseconds>(frameEnd - frameStart).count();
+			deltaTime = (float)(0.000000001 * duration);
+		} while (deltaTime < 0.9f / 60.0f);     // giving it a 10% buffer
+		frameStart = frameEnd;
+
+		g_inputManager->Update(deltaTime);
 		isRunning = g_inputManager->ProcessInput();
-		//std::chrono::high_resolution_clock::time_point frameEnd;
-		//do
-		//{
-		//	frameEnd = std::chrono::high_resolution_clock::now();
-		//	double duration = (double)std::chrono::duration_cast<std::chrono::nanoseconds>(frameEnd - frameStart).count();
-		//	deltaTime = (float)(0.000000001 * duration);
-		//} while (deltaTime < 0.9f / 60.0f);     // giving it a 10% buffer
-		//frameStart = frameEnd;
-		//g_renderManager->Update(deltaTime);
-		//g_renderManager->Render();
+
+		g_renderManager->Update(deltaTime);
+		g_inputManager->UpdatePrevInput();
+
+		g_renderManager->Render();
+
 	}
 	Shutdown();
 }
