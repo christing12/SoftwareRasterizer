@@ -1,7 +1,7 @@
 #pragma once
-#include "EngineMath.h"
+#include "Geometry.h"
 
-
+class InputManager;
 
 class Camera {
 public:
@@ -11,8 +11,11 @@ public:
 	struct Frustum {
 		float hNear, wNear, hFar, wFar;
 		Plane planes[6];
-		void Print();
 		
+	};
+
+	struct MouseInfo {
+
 	};
 
 	Camera();
@@ -20,23 +23,29 @@ public:
 	~Camera() {}
 
 	void Init();
+	void Update(float deltaTime);
 
-	void UpdateCamInfo(float fov, float aspectRatio, float nearDIst, float farDist);
 	void UpdateFrustum();
 	
 	Matrix4 viewMatrix = Matrix4::Identity;
 	Matrix4 projectionMatrix = Matrix4::Identity;
 	Vector3 cameraPos;
 
-	Vector3 up;
-	Vector3 forward;
-	Vector3 left;
+	Vector3 up = Vector3::UnitY;
+	Vector3 forward = Vector3::UnitZ * -1.f;
 	Vector3 target = Vector3::Zero;
-	
-	void Reset();
+	Vector3 right = Vector3::UnitX;
 
 	Frustum frustum;
 private:
+	InputManager* g_inputManager;
 	void ConstructPlane(Vector3 point, float dimen, PlaneDir planeIdx, Vector3 axis1, Vector3 axis2);
 	float fov = Math::ToRadians(50.f), aspectRatio, nearDist = 0.1f, farDist = 100.f;
+
+	const float cameraSpeed = 0.5f;
+	const float mouseSens = 0.1f;
+	float yaw, pitch;
+
+	Vector2 prevMousePos;
+	void MouseRotation();
 };
