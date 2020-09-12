@@ -8,6 +8,8 @@
 
 Mesh::Mesh(const char* filename) {
 	LoadFile(filename);
+	CalculateFacetNormals();
+	CalculateTangentSpace();
 }
 
 
@@ -73,7 +75,7 @@ void Mesh::LoadFile(const char* filename) {
 		}
 	}
 
-
+	// ordering all the vertices correctly so its easy to go through and render triangles later on
 	for (unsigned int i = 0; i < vIndices.size(); i++) {
 		Vertex v;
 		v.pos = tempVerts[vIndices[i] - 1];
@@ -81,8 +83,7 @@ void Mesh::LoadFile(const char* filename) {
 		v.normal = tempNormals[normIndices[i] - 1];
 		m_vertices.push_back(v);
 	}
-	CalculateFacetNormals();
-	CalculateTangentSpace();
+
 }
 
 

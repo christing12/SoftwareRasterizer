@@ -1,7 +1,9 @@
 #include "Camera.h"
 #include "DisplayManager.h"
 #include "InputManager.h"
+#include "RenderObj.h"
 #include <iostream>
+#include <ctime>
 
 Camera::Camera()
 	: up(Vector3::UnitY)
@@ -16,7 +18,7 @@ Camera::Camera()
 Camera::Camera(Vector3 inPos) : cameraPos(inPos) {
 	g_inputManager = InputManager::Get();
 	Init();
-	
+	UpdateFrustum();
 }
 
 // Sets up View Matrix and Project Matrix(Perspective for now)
@@ -28,6 +30,16 @@ void Camera::Init() {
 }
 
 void Camera::Update(float deltaTime) {
+	Pan(deltaTime);
+	Look(deltaTime);
+	Vector3 zoomPos = Zoom(deltaTime);
+
+	viewMatrix = Matrix4::CreateLookAt(zoomPos, cameraPos + forward, up);
+	UpdateFrustum();
+}
+
+// simple panning using WASD 
+void Camera::Pan(float deltaTime) {
 	right = Normalize(Cross(forward, up));
 	if (g_inputManager->KeyDown(SDL_SCANCODE_W)) {
 		cameraPos += cameraSpeed * deltaTime * forward;
@@ -41,16 +53,53 @@ void Camera::Update(float deltaTime) {
 	if (g_inputManager->KeyDown(SDL_SCANCODE_D)) {
 		cameraPos += cameraSpeed * deltaTime * right;
 	}
-	//MouseRotation();
-	viewMatrix = Matrix4::CreateLookAt(cameraPos, cameraPos + forward, up);
-	UpdateFrustum();
+}
+
+// Updates camera forward vector based on mouse click
+void Camera::Look(float deltaTime) {
+	if (g_inputManager->MouseButtonPressed(InputManager::MOUSE_BUTTON::LEFT)) {
+		prevMousePos = g_inputManager->MousePos();
+		return;
+	}
+	if (!g_inputManager->MouseButtonDown(InputManager::MOUSE_BUTTON::LEFT)) { return; }
+
+	// --- Updating mouse positions --- //
+	Vector2 currMousePos = g_inputManager->MousePos();
+	Vector2 offset = Vector2(currMousePos.x - prevMousePos.x, prevMousePos.y - currMousePos.y);
+	prevMousePos = currMousePos;
+
+	// --- Updating yaw and pitch --- //
+	const float sensitivity = 0.1f;
+	offset *= sensitivity;
+	yaw += offset.x;
+	pitch += offset.y;
+	Math::Clamp(pitch, -89.f, 89.f);
+
+	// --- Calcaulting forward vector --- //
+	float x = cosf(Math::ToRadians(yaw)) * cosf(Math::ToRadians(pitch));
+	float y = sinf(Math::ToRadians(pitch));
+	float z = sinf(Math::ToRadians(yaw)) * cosf(Math::ToRadians(pitch));
+	forward = Normalize(Vector3(x, y, z));
+}
+
+Vector3 Camera::Zoom(float deltaTime) {
+	// --- Checking zoom parameters --- //
+	int wheelPos = g_inputManager->WheelPos();
+	if (wheelPos > 0) zoomLevel++;
+	else if (wheelPos < 0) zoomLevel--;
+	return cameraPos + zoomLevel * zoomIncrement * forward;
 }
 
 void Camera::MouseRotation() {
-	Vector2 mousePos = g_inputManager->MousePos();
-	Vector2 offset(mousePos.x - prevMousePos.x, prevMousePos.y - mousePos.y);
-	prevMousePos = mousePos;
-	offset *= mouseSens;
+	if (!g_inputManager->MouseButtonDown(InputManager::MOUSE_BUTTON::LEFT)) { return; }
+	if (g_inputManager->MouseButtonPressed(InputManager::MOUSE_BUTTON::LEFT)) { return; }
+	Vector2 currMousePos = g_inputManager->MousePos();
+
+	Vector2 offset = Vector2(currMousePos.x - prevMousePos.x, prevMousePos.y - currMousePos.y);
+	prevMousePos = currMousePos;
+
+	const float sensitivity = 0.1f;
+	offset *= sensitivity;
 
 	yaw += offset.x;
 	pitch += offset.y;
@@ -69,15 +118,15 @@ void Camera::UpdateFrustum() {
 	Vector3 Y = viewMatrix.GetYAxis();
 
 
-	float tan = 2.f * tanf(fov / 2.f);
+	float tan = tanf(fov / 2.f);
 	frustum.hNear = tan * nearDist;
 	frustum.wNear = frustum.hNear * aspectRatio;
 
 	frustum.hFar = tan * farDist;
 	frustum.wFar = frustum.hFar * aspectRatio;
 
-	Vector3 fc = cameraPos - Z * nearDist;
-	Vector3 nc = cameraPos - Z * farDist;
+	Vector3 nc = cameraPos - Z * nearDist;
+	Vector3 fc = cameraPos - Z * farDist;
 
 	frustum.planes[NEARP].UpdatePlane(-1*Z, nc);
 	frustum.planes[FARP].UpdatePlane(Z, fc);
@@ -106,9 +155,28 @@ void Camera::UpdateFrustum() {
 	frustum.planes[RIGHT].UpdatePlane(normal, point);
 }
 
-// helper function for view frustum updates
-void Camera::ConstructPlane(Vector3 point, float dimen, PlaneDir planeIdx, Vector3 axis1, Vector3 axis2) {
-	Vector3 p = (point + axis1 * dimen);
-	Vector3 normal = Normalize(p - cameraPos) * axis2;
-	frustum.planes[planeIdx].UpdatePlane(normal, p);
+// frustum clipping
+bool Camera::Frustum::Clipped(RenderObj* obj) {
+	Vector3 verts[8];
+	obj->bounds.ConstructVerts(verts);
+
+	// convert to world space
+	for (int i = 0; i < 8; i++) {
+		verts[i] = Transform(verts[i], obj->transform);
+	}
+
+	int out, in;
+	for (int i = 0; i < 6; i++) {
+		out = 0, in = 0;
+		for (int j = 0; j < 8 && (in == 0 || out == 0); j++) {
+			if (planes[i].Distance(verts[j]) < 0.f) {
+				out++;
+			}
+			else {
+				in++;
+			}
+		}
+		if (!in) return true;
+	}
+	return false;
 }

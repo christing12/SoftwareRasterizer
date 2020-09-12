@@ -28,6 +28,8 @@ public:
 	std::vector<RenderObj*>& GetRenderObjs() { return m_renderObjs; }
 
 	void FrustumCulling();
+
+	std::vector<RenderObj*> GetVisibleObjs();
 private:
 	InputManager* g_inputManager;
 

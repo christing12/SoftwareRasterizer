@@ -27,5 +27,3 @@ private:
 	SDL_Window* m_window;
 	SDL_Surface* m_surface;
 };
-
-// Used to do all the rendering information, realized that should be probably in its own class

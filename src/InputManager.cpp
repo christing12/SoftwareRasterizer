@@ -7,9 +7,13 @@
 
 InputManager::InputManager() {
 	std::cout << "Input Manager being initted" << std::endl;
+
+	// --- keyboard initialize -- //
 	m_keyboardState = SDL_GetKeyboardState(&m_keyLen);
 	m_prevKeyboardState = new Uint8[m_keyLen];
 	memcpy(m_prevKeyboardState, m_keyboardState, m_keyLen);
+
+	m_mouseState = SDL_GetMouseState(&m_mouseXPos, &m_mouseYPos);
 }
 
 InputManager::~InputManager() {
@@ -19,6 +23,7 @@ InputManager::~InputManager() {
 
 void InputManager::Update(float deltaTime) {
 	m_mouseState = SDL_GetMouseState(&m_mouseXPos, &m_mouseYPos);
+	m_mouseWheelY = 0;
 }
 
 void InputManager::UpdatePrevInput() {
@@ -66,16 +71,19 @@ int InputManager::GetMouseMask(MOUSE_BUTTON button) {
 	return mask;
 }
 
+// returns true if button is pressed this frame
 bool InputManager::MouseButtonDown(MOUSE_BUTTON button) {
 	Uint32 mask = GetMouseMask(button);
 	return (m_mouseState & mask);
 }
 
+// returns true if button was not pressed last frame but pressed this frame
 bool InputManager::MouseButtonPressed(MOUSE_BUTTON button) {
 	Uint32 mask = GetMouseMask(button);
 	return !(m_prevMouseState & mask) && (m_mouseState & mask);
 }
 
+// return true if the button was pressed 
 bool InputManager::MouseButtonReleased(MOUSE_BUTTON button) {
 	Uint32 mask = GetMouseMask(button);
 	return (m_prevMouseState & mask) && !(m_mouseState & mask);
@@ -87,6 +95,7 @@ bool InputManager::MouseButtonReleased(MOUSE_BUTTON button) {
 // NOTE: maybe combine handle even with this?
 bool InputManager::ProcessInput() {
 	SDL_Event event;
+	
 	while (SDL_PollEvent(&event)) {
 		if (event.type == SDL_QUIT) {
 			return false;
@@ -124,7 +133,11 @@ bool InputManager::HandleEvent(SDL_Event* event) {
 			RenderManager::Get()->Render();
 			break;
 		}
-
+	}
+	else if(event->type == SDL_MOUSEWHEEL) {
+		Sint32 temp = event->wheel.y;
+		if (temp > 0) m_mouseWheelY = 1;
+		else if (temp < 0) m_mouseWheelY = -1;
 	}
 	return true;
 }

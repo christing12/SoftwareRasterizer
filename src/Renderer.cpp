@@ -128,6 +128,9 @@ void Renderer::DrawObj(RenderObj* obj, Camera* cam, bool wireframe) {
 		for (int j = 0; j < 3; j++) {
 			wVals[j] = vsResult[j].w;
 			vsResult[j] /= vsResult[j].w;
+		}
+
+		for (int j = 0; j < 3; j++) {
 			screenSpaceVerts[j] = ViewportTransform(vsResult[j]);
 		}
 
@@ -217,9 +220,9 @@ void Renderer::ViewportTransform(Triangle& t) {
 // same as taking the cross of (b-a) & (c-a) and getting the z component
 // mine returns negative if its on the inside
 float Renderer::EdgeFunction(const Vector3& a, const Vector3& b, const Vector3& c) {
-	Vector3 tA = b - a;
-	Vector3 tB = c - a;
-	return (tA.x * tB.y - tA.y * tB.x);
+	Vector3 tB = b - a;
+	Vector3 tC = c - a;
+	return (tB.x * tC.y - tB.y * tC.x);
 	//return Cross(b - a, c - a).z;
 }
 
@@ -239,7 +242,6 @@ BBox Renderer::GetBBox(Triangle& t) {
 	return BBox(Vector2(minX, minY), Vector2(maxX, maxY));
 }
 
-
 /*
 	Main rasterization method(maybe put into own class?)
 	https://stackoverflow.com/questions/24441631/how-exactly-does-opengl-do-perspectively-correct-linear-interpolation#:~:text=Perspective%20correct%20interpolation,-So%20let's%20say&text=This%20gives%20us%20the%20barycentric,by%20extension%2C%20world%20coordinates).
@@ -248,7 +250,7 @@ BBox Renderer::GetBBox(Triangle& t) {
 void Renderer::DrawRasterTriangle( Triangle& t, float wVals[3], Shader* shader) {
 	// returns the area of the parallelogram formed by two of Triangle t
 	// use as a denominator for bary coord
-	float area = EdgeFunction(t[0], t[1], t[2]);
+	float area = EdgeFunction(t[1], t[0], t[2]);
 	area = 1.f / area;
 	
 	// like gl_FragCoord where the w = gl_Position.w;
@@ -258,14 +260,14 @@ void Renderer::DrawRasterTriangle( Triangle& t, float wVals[3], Shader* shader) 
 	Vector3 zCoord(t[0].z, t[1].z, t[2].z);
 
 	// setting up linear incrementation of edge-rasterization algorithm
-	float A01 = t[0].y - t[1].y, B01 = t[1].x - t[0].x;
-	float A12 = t[1].y - t[2].y, B12 = t[2].x - t[1].x;
-	float A20 = t[2].y - t[0].y, B20 = t[0].x - t[2].x;
+	float A01 = t[1].y - t[0].y, B01 = t[0].x - t[1].x;
+	float A12 = t[2].y - t[1].y, B12 = t[1].x - t[2].x;
+	float A20 = t[0].y - t[2].y, B20 = t[2].x - t[0].x;
 	Vector3 edgeRow;
 	Vector3 point(bbox.minX, bbox.minY, 0);
-	edgeRow.x = EdgeFunction(t[1], t[2], point);
-	edgeRow.y = EdgeFunction(t[2], t[0], point);
-	edgeRow.z = EdgeFunction(t[0], t[1], point);
+	edgeRow.x = EdgeFunction(t[2], t[1], point);
+	edgeRow.y = EdgeFunction(t[0], t[2], point);
+	edgeRow.z = EdgeFunction(t[1], t[0], point);
 
 	Vector3 edge, weights;
 	float depth, normalizer = 0;
@@ -275,10 +277,11 @@ void Renderer::DrawRasterTriangle( Triangle& t, float wVals[3], Shader* shader) 
 		edge.z = edgeRow.z;
 
 		for (int x = bbox.minX; x <= bbox.maxX; x++) {
-			if (edge.x < 0 && edge.y < 0 && edge.z < 0) {
+			if (edge.x >= 0.f && edge.y >= 0.f && edge.z >= 0.f) {
 
 				//essentially percentages of the parallelogram(since both are x2 they cancel)
 				Vector3 bary = edge * area;
+
 				depth = Dot(bary, zCoord);
 
 				if ((*m_zBuffer)(x, y) < depth && depth < 1.f) {
@@ -289,7 +292,7 @@ void Renderer::DrawRasterTriangle( Triangle& t, float wVals[3], Shader* shader) 
 					normalizer = 1.f / (weights.x + weights.y + weights.z);
 					bary = weights * normalizer;
 
-					Vector3 rgb = shader->FragmentShader(bary);
+					Vector3 rgb = shader->FragmentShader(bary, bbox, t);
 					(*m_frameBuffer)(x, y) = GammaCorrect(rgb);
 				}
 			}

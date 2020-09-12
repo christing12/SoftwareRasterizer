@@ -1,5 +1,5 @@
 #pragma once
-#include "EngineMath.h"
+#include "Geometry.h"
 class Mesh;
 class Texture;
 class Material;
@@ -16,6 +16,8 @@ public:
 	Matrix4 transform = Matrix4::Identity;
 
 	float rotSpeed = 0.01f;
+
+	AABB bounds;
 private:
 	float angle = 0.0f;
 	Vector3 position = Vector3::Zero;

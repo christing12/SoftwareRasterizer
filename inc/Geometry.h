@@ -1,6 +1,8 @@
 #pragma once
 #include "EngineMath.h"
 
+class Mesh;
+
 
 struct Triangle {
     Vector3 verts[3];
@@ -42,6 +44,10 @@ struct Plane {
     Vector3 norm;
     float D;
 
+    float Distance(const Vector3& point) {
+        return Dot(norm, point) + D;
+    }
+
     void UpdatePlane(const Vector3& p0, const Vector3& p1, const Vector3& p2) {
         norm = Normalize(Cross(p1 - p0, p2 - p0));
         D = -Dot(norm, p0);
@@ -55,4 +61,12 @@ struct Plane {
 
 struct AABB {
     Vector3 min, max;
+
+    AABB() {}
+
+    AABB(Mesh* mesh);
+
+    void ConstructVerts(Vector3 verts[8]);
+    void Update();
+   
 };

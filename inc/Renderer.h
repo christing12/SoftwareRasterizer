@@ -52,7 +52,6 @@ private:
 	// NDC -> Screen Space
 	Vector3 ViewportTransform(const Vector3& v);
 	void ViewportTransform(Triangle& t);
-
 	
 	// helper functions with simple drawing
 	void DrawRasterTriangle(Triangle& t, float wVals[3], Shader* shader);

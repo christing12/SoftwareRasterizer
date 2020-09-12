@@ -2,6 +2,7 @@
 #include "Geometry.h"
 
 class InputManager;
+class RenderObj;
 
 class Camera {
 public:
@@ -12,10 +13,7 @@ public:
 		float hNear, wNear, hFar, wFar;
 		Plane planes[6];
 		
-	};
-
-	struct MouseInfo {
-
+		bool Clipped(RenderObj* obj);
 	};
 
 	Camera();
@@ -37,15 +35,25 @@ public:
 	Vector3 right = Vector3::UnitX;
 
 	Frustum frustum;
+
+	bool isVisible(RenderObj* obj) {
+		return !frustum.Clipped(obj);
+	}
 private:
 	InputManager* g_inputManager;
-	void ConstructPlane(Vector3 point, float dimen, PlaneDir planeIdx, Vector3 axis1, Vector3 axis2);
 	float fov = Math::ToRadians(50.f), aspectRatio, nearDist = 0.1f, farDist = 100.f;
 
-	const float cameraSpeed = 0.5f;
+	const float cameraSpeed = 0.8f;
 	const float mouseSens = 0.1f;
-	float yaw, pitch;
+	float yaw = -90.f, pitch = 0.f;
+
+	int zoomLevel = 0;
+	float zoomIncrement = 0.1;
 
 	Vector2 prevMousePos;
 	void MouseRotation();
+
+	void Pan(float deltaTime);
+	void Look(float deltaTime);
+	Vector3 Zoom(float deltaTime);
 };

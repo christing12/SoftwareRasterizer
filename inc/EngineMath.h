@@ -248,6 +248,8 @@ public:
         , z(inZ)
     {}
 
+    explicit Vector3(float inVal) : x(inVal), y(inVal), z(inVal) {}
+
     explicit Vector3(__m128 value)
     {
         memcpy(this, &value, sizeof(float) * 3);
@@ -537,19 +539,19 @@ public:
     // Get the X axis of the matrix (forward)
     Vector3 GetXAxis() const
     {
-        return Normalize(Vector3(mat[0][0], mat[1][0], mat[2][0]));
+        return Normalize(Vector3(mat[0][0], mat[0][1], mat[0][2]));
     }
 
     // Get the Y axis of the matrix (left)
     Vector3 GetYAxis() const
     {
-        return Normalize(Vector3(mat[0][1], mat[1][1], mat[2][1]));
+        return Normalize(Vector3(mat[1][0], mat[1][1], mat[1][2]));
     }
 
     // Get the Z axis of the matrix (up)
     Vector3 GetZAxis() const
     {
-        return Normalize(Vector3(mat[0][2], mat[1][2], mat[2][2]));
+        return Normalize(Vector3(mat[2][0], mat[2][1], mat[2][2]));
     }
 
     // Extract the scale component from the matrix
@@ -680,8 +682,10 @@ public:
         return Matrix4(temp);
     }
 
+
     static Matrix4 CreateLookAt(const Vector3& eye, const Vector3& at, const Vector3& inUp)
     {
+        // forward vec is eye - target/at because the scene is rotating not the actual 'camera'
         Vector3 forward = Normalize(eye - at);
         Vector3 right = Normalize(Cross(inUp, forward));
         Vector3 up = Cross(forward, right);

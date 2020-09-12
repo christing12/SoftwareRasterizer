@@ -19,6 +19,4 @@ private:
 	DisplayManager* g_displayManager;
 	InputManager* g_inputManager;
 	RenderManager* g_renderManager;
-
-
 };

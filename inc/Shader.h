@@ -1,9 +1,9 @@
 #pragma once
 
-#include "EngineMath.h"
 #include <algorithm>
 #include <iostream>
 #include "Texture.h"
+#include "Geometry.h"
 
 void BaryInterpolate(Vector3& output, const Vector3 in[3], const Vector3& bary) {
 	output.x = Dot(bary, Vector3(in[0].x, in[1].x, in[2].x));
@@ -15,137 +15,8 @@ struct Shader {
 	virtual ~Shader() {};
 	virtual Vector3 VertexShader(const Vector3& vert, const Vector3& texelCoords,
 		const Vector3& norm, const Vector3& tangent, int index) = 0;
-	virtual Vector3 FragmentShader(Vector3 bary) = 0;
+	virtual Vector3 FragmentShader(Vector3 bary, BBox box, Triangle& t) = 0;
 };
-
-struct FlatShader : public Shader {
-	Matrix4 MVP, MV, V, M, N;
-	float varIntensity[3];
-	Vector3 texels[3];
-	Vector3 rgb = Vector3(255.f, 255.f, 255.f);
-	Vector3 cameraPos;
-	Texture* albedoT;
-
-	Vector3 light = Vector3::One;
-
-	Vector3 VertexShader(const Vector3& vert, const Vector3& texelCoords, 
-		const Vector3& norm, const Vector3& tangent, int index) override {
-		Vector3 lightDir = Normalize(light);
-		varIntensity[index] = std::max(0.f, Dot(Transform(norm, M), lightDir));
-		texels[index] = texelCoords;
-		return Transform(vert, MVP);
-	}
-
-	Vector3 textureColor, iUV;
-
-	float iU, iV;
-	Vector3 FragmentShader(Vector3 bary) {
-		Vector3 vIntensity = Vector3(varIntensity[0], varIntensity[1], varIntensity[2]);
-
-		iU = Dot(bary, Vector3(texels[0].x, texels[1].x, texels[2].x));
-		iV = Dot(bary, Vector3(texels[0].y, texels[1].y, texels[2].y));
-
-		textureColor = albedoT->Sample(iU, iV);
-		
-
-		float intensity = Dot(bary, vIntensity);
-		Vector3 finColor = rgb * intensity * textureColor;
-		return finColor;
-	}
-};
-
-
-// DOING PER VERTEX LIGHTING TO IMPROVE PERFORMANCE
-struct NormalShader : public Shader {
-
-	//UNIFORM
-	Matrix4 MVP, MV, V, M, N;
-	Vector3 cameraPos;
-	Texture* albedoT, *normalMap;
-	Vector3 lightColor = Vector3::One;
-
-	// VOUT
-	Vector3 texels[3];
-	Vector3 lightDir[3];
-	Vector3 viewDir[3];
-	float intensity[3];
-
-	// variables for vertex shader calculations
-	Vector3 lightPos = Vector3::One;
-	Vector3 worldPos;
-	Vector3 normalWS, tangentWS, bitangentWS;
-	Matrix4 TBN;
-
-	Vector3 VertexShader(const Vector3& vert,
-		const Vector3& texelCoords,
-		const Vector3& norm,
-		const Vector3& tangent,
-		int index
-		)
-	{
-		worldPos = Transform(vert, M);
-		texels[index] = texelCoords;
-
-		normalWS = Normalize(Transform(norm, N, 0.f));
-		tangentWS = Normalize(Transform(tangent, N, 0.f));
-		bitangentWS = Cross(normalWS, tangentWS);
-		TBN = Matrix4::TBNMatrix(tangentWS, bitangentWS, normalWS);
-
-		/* If doing with OpenGL i would want the inverse of TBN to convert
-			lighting variables into TBN space, but since with SR i can just 
-			do calculations in world space then transform into tangent space
-			and do per-vertex lighting calculations to save on computation
-		*/
-
-		lightDir[index] = Transform(Normalize(lightPos), TBN, 0.f);
-		viewDir[index] = Transform(Normalize(cameraPos - worldPos), TBN, 0.f);
-		return Transform(vert, MVP);
-	}
-
-	// PER PIXEL
-	Vector3 fragTexels, fragLight, fragView, fragNorm;
-	Vector3 reflectDir;
-	Vector3 rgb = Vector3(255.f, 255.f, 255.f);
-	Vector3 diffuse, specular, ambient;
-	Vector3 textureColor, normal;
-	float ambientStrength = 0.4f, diffStrength = 0.9f, specStrength = 0.5f;
-	float shininess = 32.f;
-	float spec;
-
-	Vector3 FragmentShader(Vector3 bary) {
-		BaryInterpolate(fragTexels, texels, bary);
-		BaryInterpolate(fragLight, lightDir, bary);
-		BaryInterpolate(fragView, viewDir, bary);
-		fragLight.Normalize();
-		fragView.Normalize();
-
-		textureColor = albedoT->Sample(fragTexels.x, fragTexels.y);
-
-		normal = normalMap->Sample(fragTexels.x, fragTexels.y);
-		normal.Normalize();
-
-		//normal = Normalize((normal * 2.f) - Vector3::One);
-		float NdotL = std::max(0.f, Dot(normal, fragLight));
-		float NdotV = std::max(0.f, Dot(normal, fragView));
-
-		
-		// ambient
-		ambient = ambientStrength * lightColor;
-
-		// diffuse
-		diffuse = lightColor * NdotL;
-		Vector3 final = (diffuse)*textureColor;
-		//return  final;
-
-		Vector3 half = Normalize(fragLight + fragView);
-		float NdotH = std::max(0.f, Dot(normal, half));
-		spec = std::pow(NdotH, shininess);
-		specular = lightColor * spec * specStrength;
-		return (ambient + specular + diffuse) * textureColor;
-	}
-};
-
-
 
 // DOING PER VERTEX LIGHTING TO IMPROVE PERFORMANCE
 struct PBRShader : public Shader {
@@ -253,7 +124,7 @@ struct PBRShader : public Shader {
 
 	// All calculations are done in tangent space
 	// Per-vertex lighting and then using interpolation
-	Vector3 FragmentShader(Vector3 bary) {
+	Vector3 FragmentShader(Vector3 bary, BBox box, Triangle& t) {
 		// Interpolation of fragment shader inputs
 		BaryInterpolate(fragTexels, texels, bary);
 		BaryInterpolate(fragLight, lightDir, bary);
@@ -261,13 +132,12 @@ struct PBRShader : public Shader {
 		fragLight.Normalize();
 		fragView.Normalize();
 
-
 		// All texture sampling
 		albedo = albedoT->Sample(fragTexels.x, fragTexels.y);
 		normal = normalMap->Sample(fragTexels.x, fragTexels.y);
-		metalness = metal->SampleF(fragTexels.x, fragTexels.y);
-		roughness = rough->SampleF(fragTexels.x, fragTexels.y);
-		AO = ambientO->SampleF(fragTexels.x, fragTexels.y);
+		metalness = metal->Sample(fragTexels.x, fragTexels.y).x;
+		roughness = rough->Sample(fragTexels.x, fragTexels.y).x;
+		AO = ambientO->Sample(fragTexels.x, fragTexels.y).x;
 
 		normal = normalMap->Sample(fragTexels.x, fragTexels.y);
 		normal.Normalize();
@@ -301,3 +171,136 @@ struct PBRShader : public Shader {
 		return directLighting + ambient;
 	}
 };
+
+
+
+
+/*
+struct FlatShader : public Shader {
+	Matrix4 MVP, MV, V, M, N;
+	float varIntensity[3];
+	Vector3 texels[3];
+	Vector3 rgb = Vector3(255.f, 255.f, 255.f);
+	Vector3 cameraPos;
+	Texture* albedoT;
+
+	Vector3 light = Vector3::One;
+
+	Vector3 VertexShader(const Vector3& vert, const Vector3& texelCoords,
+		const Vector3& norm, const Vector3& tangent, int index) override {
+		Vector3 lightDir = Normalize(light);
+		varIntensity[index] = std::max(0.f, Dot(Transform(norm, M), lightDir));
+		texels[index] = texelCoords;
+		return Transform(vert, MVP);
+	}
+
+	Vector3 textureColor, iUV;
+
+	float iU, iV;
+	Vector3 FragmentShader(Vector3 bary) {
+		Vector3 vIntensity = Vector3(varIntensity[0], varIntensity[1], varIntensity[2]);
+
+		iU = Dot(bary, Vector3(texels[0].x, texels[1].x, texels[2].x));
+		iV = Dot(bary, Vector3(texels[0].y, texels[1].y, texels[2].y));
+
+		textureColor = albedoT->Sample(iU, iV);
+
+
+		float intensity = Dot(bary, vIntensity);
+		Vector3 finColor = rgb * intensity * textureColor;
+		return finColor;
+	}
+};
+*/
+
+// DOING PER VERTEX LIGHTING TO IMPROVE PERFORMANCE
+/*
+struct NormalShader : public Shader {
+
+	//UNIFORM
+	Matrix4 MVP, MV, V, M, N;
+	Vector3 cameraPos;
+	Texture* albedoT, *normalMap;
+	Vector3 lightColor = Vector3::One;
+
+	// VOUT
+	Vector3 texels[3];
+	Vector3 lightDir[3];
+	Vector3 viewDir[3];
+	float intensity[3];
+
+	// variables for vertex shader calculations
+	Vector3 lightPos = Vector3::One;
+	Vector3 worldPos;
+	Vector3 normalWS, tangentWS, bitangentWS;
+	Matrix4 TBN;
+
+	Vector3 VertexShader(const Vector3& vert,
+		const Vector3& texelCoords,
+		const Vector3& norm,
+		const Vector3& tangent,
+		int index
+		)
+	{
+		worldPos = Transform(vert, M);
+		texels[index] = texelCoords;
+
+		normalWS = Normalize(Transform(norm, N, 0.f));
+		tangentWS = Normalize(Transform(tangent, N, 0.f));
+		bitangentWS = Cross(normalWS, tangentWS);
+		TBN = Matrix4::TBNMatrix(tangentWS, bitangentWS, normalWS);
+
+		/* If doing with OpenGL i would want the inverse of TBN to convert
+			lighting variables into TBN space, but since with SR i can just
+			do calculations in world space then transform into tangent space
+			and do per-vertex lighting calculations to save on computation
+
+
+		lightDir[index] = Transform(Normalize(lightPos), TBN, 0.f);
+		viewDir[index] = Transform(Normalize(cameraPos - worldPos), TBN, 0.f);
+		return Transform(vert, MVP);
+	}
+
+	// PER PIXEL
+	Vector3 fragTexels, fragLight, fragView, fragNorm;
+	Vector3 reflectDir;
+	Vector3 rgb = Vector3(255.f, 255.f, 255.f);
+	Vector3 diffuse, specular, ambient;
+	Vector3 textureColor, normal;
+	float ambientStrength = 0.4f, diffStrength = 0.9f, specStrength = 0.5f;
+	float shininess = 32.f;
+	float spec;
+
+	Vector3 FragmentShader(Vector3 bary) {
+		BaryInterpolate(fragTexels, texels, bary);
+		BaryInterpolate(fragLight, lightDir, bary);
+		BaryInterpolate(fragView, viewDir, bary);
+		fragLight.Normalize();
+		fragView.Normalize();
+
+		textureColor = albedoT->Sample(fragTexels.x, fragTexels.y);
+
+		normal = normalMap->Sample(fragTexels.x, fragTexels.y);
+		normal.Normalize();
+
+		//normal = Normalize((normal * 2.f) - Vector3::One);
+		float NdotL = std::max(0.f, Dot(normal, fragLight));
+		float NdotV = std::max(0.f, Dot(normal, fragView));
+
+
+		// ambient
+		ambient = ambientStrength * lightColor;
+
+		// diffuse
+		diffuse = lightColor * NdotL;
+		Vector3 final = (diffuse)*textureColor;
+		//return  final;
+
+		Vector3 half = Normalize(fragLight + fragView);
+		float NdotH = std::max(0.f, Dot(normal, half));
+		spec = std::pow(NdotH, shininess);
+		specular = lightColor * spec * specStrength;
+		return (ambient + specular + diffuse) * textureColor;
+	}
+};
+*/

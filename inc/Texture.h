@@ -18,9 +18,6 @@ public:
 
 	// samples 3 floats in a row (RGB)
 	Vector3 Sample(float u, float v);
-
-	// samples 1 float (AO, metalness, roughness, etc...)
-	float SampleF(float u, float v);
 	TexType type;
 private:
 	int width, height, channels;

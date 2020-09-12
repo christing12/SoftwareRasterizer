@@ -155,3 +155,11 @@ Material* Scene::GetMaterialFromJSON(json matJSON) {
 	return mat;
 
 }
+
+std::vector<RenderObj*> Scene::GetVisibleObjs() {
+	std::vector<RenderObj*> visObjs;
+	for (RenderObj* obj : m_renderObjs) {
+		if (m_mainCam->isVisible(obj)) visObjs.push_back(obj);
+	}
+	return visObjs;
+}

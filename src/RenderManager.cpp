@@ -31,7 +31,7 @@ void RenderManager::Update(float deltaTime) {
 // clears the zbuffer/back buffer, init rendering process, and update the display
 void RenderManager::Render() {
 	m_renderer->ClearBuffers();
-	std::vector<RenderObj*> objs = m_currScene->GetRenderObjs();
+	std::vector<RenderObj*> objs = m_currScene->GetVisibleObjs();
 
 	for (RenderObj* obj : objs) {
 		m_renderer->DrawObj(obj, m_currScene->GetCamera(), wireframe);
