@@ -4,7 +4,6 @@ My implementation of a software renderer for learning purposes! I chose not to u
 because I wanted to learn more about the graphics pipeline. This project only has SDL2 for window & input management, and nlohmann json parser to create scenes easier.
 
 ### Features
-
 * Cross platform
 * Minimal dependencies
 * Back-face culling
@@ -17,7 +16,6 @@ because I wanted to learn more about the graphics pipeline. This project only ha
 * Blinn-Phong reflection model
 * Metallic-roughness workflow
 * Tangent space normal mapping
-
 * Simple math library
 * .Obj file parser
 * SDL2 window management
