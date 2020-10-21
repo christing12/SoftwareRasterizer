@@ -25,7 +25,7 @@ struct PBRShader : public Shader {
 		Matrix4 MVP, MV, V, M, N;
 		Vector3 cameraPos;
 
-		Texture* albedoT, * normalT, * aoTex, * metalT, * roughT;
+		Ref<Texture> albedoT,  normalT,  aoTex,  metalT,  roughT;
 		Vector3 lightPos, lightColor;
 	};
 
@@ -41,7 +41,7 @@ struct PBRShader : public Shader {
 	//UNIFORM
 	Matrix4 MVP, MV, V, M, N;
 	Vector3 cameraPos;
-	Texture* albedoT, * normalMap, * ambientO, * metal, * rough;
+	Texture* albedoT,  * normalMap, * ambientO, *  metal, * rough;
 	Vector3 lightColor{ 1.f, 1.f, 1.f }, lightColorSpec{ 1.f, 1.f, 1.f };
 
 	// VOUT

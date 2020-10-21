@@ -4,24 +4,14 @@
 #include "Texture.h"
 #include "Material.h"
 
-RenderObj::RenderObj(Material* mat, Mesh* mesh) 
+RenderObj::RenderObj(Ref<Material> mat, Ref<Mesh> mesh)
 	: m_mat(mat)
 	, m_mesh(mesh)
-	, bounds(mesh)
+	, bounds(mesh.get())
 {
 
 }
 
-RenderObj::~RenderObj() {
-	delete m_mesh;
-	delete m_mat;
-}
-
-
 void RenderObj::Update(float deltaTime) {
 	bounds.Update();
-	/*
-	Vector3 translation = transform.GetTranslation();
-	angle += Math::Pi * rotSpeed;
-	transform = Matrix4::CreateTranslation(translation) * Matrix4::CreateRotationY(angle); */
 }

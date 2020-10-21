@@ -9,26 +9,25 @@
 #include "nlohmann/json.hpp"
 #include "InputManager.h"
 
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <map>
+
 using json = nlohmann::json;
 
-Scene::Scene(const char* filename) {
-	g_inputManager = InputManager::Get();
+Scene::Scene(const char* filename, Ref<InputManager> inputManager)
+	: g_InputManager(inputManager)
+{
 	LoadScene(filename);
 }
 
 Scene::~Scene() {
-	for (RenderObj* obj : m_renderObjs) {
-		delete obj;
-	}
 	delete m_mainCam;
 }
 
 void Scene::LoadScene(const char* filename) {
+	std::cout << filename << std::endl;
 	std::ifstream ifs(filename);
+	if (ifs.fail()) {
+		std::cout << " THERE ARE SOME ISSUES" << std::endl;
+	}
 	json scene = json::parse(ifs);
 
 	json metadata = scene["metadata"];
@@ -41,7 +40,7 @@ void Scene::LoadScene(const char* filename) {
 		json cameraData = scene["camera"];
 		json position = cameraData["position"];
 		Vector3 translation = Vector3(float(position[0]), float(position[1]), float(position[2]));
-		m_mainCam = new Camera(translation);
+		m_mainCam = new Camera(translation, g_InputManager);
 	}
 
 	// parsing all object information
@@ -66,13 +65,13 @@ void Scene::LoadScene(const char* filename) {
 			
 
 			std::string meshFile = obj["mesh"];
-			Mesh* mesh = new Mesh(meshFile.c_str());
+			Ref<Mesh> mesh = CreateRef<Mesh>(meshFile.c_str());
 
 
-			Material* mat = GetMaterialFromJSON(obj["material"]);
-			RenderObj* rObj = new RenderObj(mat, mesh);
+			Ref<Material> mat = GetMaterialFromJSON(obj["material"]);
+			Ref<RenderObj> rObj = CreateRef<RenderObj>(mat, mesh);
 			rObj->transform = transMat;
-			m_renderObjs.push_back(rObj);
+			_renderObjs.push_back(rObj);
 		}
 
 		// parsing the lights in the scene
@@ -95,19 +94,19 @@ void Scene::LoadScene(const char* filename) {
 }
 
 void Scene::Update(float deltaTime) {
-	if (g_inputManager->MouseButtonPressed(InputManager::MOUSE_BUTTON::LEFT)) {
-		Vector2 mousePos = g_inputManager->MousePos();
+	if (g_InputManager->MouseButtonPressed(MOUSE_BUTTON::LEFT)) {
+		Vector2 mousePos = g_InputManager->MousePos();
 		std::cout << "Mouse Pos: " << mousePos.x << " " << mousePos.y << std::endl;
 	}
 	m_mainCam->Update(deltaTime);
-	for (RenderObj* obj : m_renderObjs) {
+	for (Ref<RenderObj> obj : _renderObjs) {
 		obj->Update(deltaTime);
 	}
 	FrustumCulling();
 }
 
 void Scene::FrustumCulling() {
-	for (RenderObj* obj : m_renderObjs) {
+	for (Ref<RenderObj> obj : _renderObjs) {
 
 	}
 }
@@ -122,19 +121,18 @@ void Scene::GetTextureFromJSON(Material* mat, std::string key, nlohmann::json js
 	}
 }
 
-Material* Scene::GetMaterialFromJSON(json matJSON) {
+Ref<Material> Scene::GetMaterialFromJSON(json matJSON) {
 	std::string type = matJSON["type"];
-	Material* mat = new Material(type);
+	Ref<Material> mat = CreateRef<Material>(type);
+
 
 	std::string albedoFile = matJSON["albedo"];
-	Texture* albedo = new Texture(albedoFile.c_str(), Texture::TexType::RGB);
-	mat->albedoTex = albedo;
+	mat->Albedo = CreateRef<Texture>(albedoFile.c_str(), TEXTURE_TYPE::RGB);
 
 	auto iter = matJSON.find("normal");
 	if (iter != matJSON.end()) {
 		std::string normalFile = matJSON["normal"];
-		Texture* normalMap = new Texture(normalFile.c_str(), Texture::TexType::XYZ);
-		mat->normalMap = normalMap;
+		mat->NormalMap = CreateRef<Texture>(normalFile.c_str(), TEXTURE_TYPE::XYZ);
 	}
 
 	if (matJSON.find("metal") != matJSON.end() &&
@@ -144,23 +142,21 @@ Material* Scene::GetMaterialFromJSON(json matJSON) {
 		std::string roughPath = matJSON["rough"];
 		std::string aoPath = matJSON["AO"];
 
-		Texture* metal = new Texture(metalPath.c_str(), Texture::TexType::BW);
-		Texture* rough = new Texture(roughPath.c_str(), Texture::TexType::BW);
-		Texture* ao = new Texture(aoPath.c_str(), Texture::TexType::BW);
+		Ref<Texture> metal	= CreateRef<Texture>(metalPath.c_str(), TEXTURE_TYPE::BW);
+		Ref<Texture> rough	= CreateRef<Texture>(roughPath.c_str(), TEXTURE_TYPE::BW);
+		Ref<Texture> ao		= CreateRef<Texture>(aoPath.c_str(), TEXTURE_TYPE::BW);
 
-		mat->metal = metal;
-		mat->rough = rough;
-		mat->ambientO = ao;
+		mat->Metalness = metal;
+		mat->Roughness = rough;
+		mat->AmbientOcclusion = ao;
 	}
-
 	return mat;
-
 }
 
 std::vector<RenderObj*> Scene::GetVisibleObjs() {
 	std::vector<RenderObj*> visObjs;
-	for (RenderObj* obj : m_renderObjs) {
-		if (m_mainCam->isVisible(obj)) visObjs.push_back(obj);
+	for (Ref<RenderObj> obj : _renderObjs) {
+		if (m_mainCam->isVisible(obj.get())) visObjs.push_back(obj.get());
 	}
 	return visObjs;
 }

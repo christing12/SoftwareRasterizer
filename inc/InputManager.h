@@ -2,16 +2,16 @@
 #include <SDL.h>
 #include "EngineMath.h"
 
+
+enum MOUSE_BUTTON {
+	LEFT, RIGHT, MIDDLE, BACK, FORWARD
+};
+
 // Singleton class type design
 class InputManager {
 public:
-	static InputManager* Get() {
-		static InputManager manager;
-		return &manager;
-	}
-	enum MOUSE_BUTTON {
-		LEFT, RIGHT, MIDDLE, BACK, FORWARD
-	};
+	InputManager();
+	~InputManager();
 
 	// --- Input Controls --- //
 	void Update(float deltaTime);
@@ -34,8 +34,7 @@ public:
 
 
 private:
-	InputManager();
-	~InputManager();
+
 
 	bool HandleEvent(SDL_Event* event);
 

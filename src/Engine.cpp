@@ -13,20 +13,21 @@
 // Separate from the constructor in case the engine needs to restart
 bool Engine::Init() {
 	bool successful = true;
-	g_displayManager = DisplayManager::Get();
-	if (!g_displayManager->Init()) {
+
+	g_DisplayManager = CreateRef<DisplayManager>();
+	if (!g_DisplayManager->Init()) {
 		std::cout << "Error with Diplay Manager " << std::endl;
 		return false;
 	}
 
-	g_inputManager = InputManager::Get();
-	
-	g_renderManager = RenderManager::Get();
-	if (!g_renderManager->Init(DisplayManager::SCREEN_WIDTH, DisplayManager::SCREEN_HEIGHT)) {
+	g_InputManager = CreateRef<InputManager>();
+
+	g_RenderManager = CreateRef<RenderManager>(g_DisplayManager, g_InputManager);
+	if (!g_RenderManager->Init(DisplayManager::SCREEN_WIDTH, DisplayManager::SCREEN_HEIGHT)) {
 		std::cout << "Error with Renderer" << std::endl;
 		return false;
 	}
-	g_renderManager->Render();
+	g_RenderManager->Render();
 	return true;
 }
 
@@ -45,13 +46,13 @@ void Engine::Run() {
 		} while (deltaTime < 0.9f / 60.0f);     // giving it a 10% buffer
 		frameStart = frameEnd;
 
-		g_inputManager->Update(deltaTime);
-		isRunning = g_inputManager->ProcessInput();
+		g_InputManager->Update(deltaTime);
+		isRunning = g_InputManager->ProcessInput();
 
-		g_renderManager->Update(deltaTime);
-		g_inputManager->UpdatePrevInput();
+		g_RenderManager->Update(deltaTime);
+		g_InputManager->UpdatePrevInput();
 
-		g_renderManager->Render();
+		g_RenderManager->Render();
 
 	}
 	Shutdown();
@@ -59,6 +60,6 @@ void Engine::Run() {
 
 // Separate from the destructor in case engine needs to restart(?)
 void Engine::Shutdown() {
-	g_displayManager->Shutdown();
-	g_inputManager->Shutdown();
+	g_DisplayManager->Shutdown();
+	g_InputManager->Shutdown();
 }

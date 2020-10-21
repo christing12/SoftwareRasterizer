@@ -6,18 +6,19 @@
 #include <iostream>
 #include <ctime>
 
-Camera::Camera()
+Camera::Camera(Ref<InputManager> inputManager)
 	: up(Vector3::UnitY)
 	, fov(Math::ToRadians(50.f))
 	, nearDist(0.1f)
 	, farDist(100.f)
 	, target(Vector3::Zero)
-{
-//	UpdateFrustum();
-}
+	, g_InputManager(inputManager)
+{}
 
-Camera::Camera(Vector3 inPos) : cameraPos(inPos) {
-	g_inputManager = InputManager::Get();
+Camera::Camera(Vector3 inPos, Ref<InputManager> inputManager)
+	: cameraPos(inPos)
+	, g_InputManager(inputManager)
+{
 	Init();
 	UpdateFrustum();
 }
@@ -42,30 +43,30 @@ void Camera::Update(float deltaTime) {
 // simple panning using WASD 
 void Camera::Pan(float deltaTime) {
 	right = Normalize(Cross(forward, up));
-	if (g_inputManager->KeyDown(SDL_SCANCODE_W)) {
+	if (g_InputManager->KeyDown(SDL_SCANCODE_W)) {
 		cameraPos += cameraSpeed * deltaTime * forward;
 	}
-	if (g_inputManager->KeyDown(SDL_SCANCODE_S)) {
+	if (g_InputManager->KeyDown(SDL_SCANCODE_S)) {
 		cameraPos -= cameraSpeed * deltaTime * forward;
 	}
-	if (g_inputManager->KeyDown(SDL_SCANCODE_A)) {
+	if (g_InputManager->KeyDown(SDL_SCANCODE_A)) {
 		cameraPos -= cameraSpeed * deltaTime * right;
 	}
-	if (g_inputManager->KeyDown(SDL_SCANCODE_D)) {
+	if (g_InputManager->KeyDown(SDL_SCANCODE_D)) {
 		cameraPos += cameraSpeed * deltaTime * right;
 	}
 }
 
 // Updates camera forward vector based on mouse click
 void Camera::Look(float deltaTime) {
-	if (g_inputManager->MouseButtonPressed(InputManager::MOUSE_BUTTON::LEFT)) {
-		prevMousePos = g_inputManager->MousePos();
+	if (g_InputManager->MouseButtonPressed(MOUSE_BUTTON::LEFT)) {
+		prevMousePos = g_InputManager->MousePos();
 		return;
 	}
-	if (!g_inputManager->MouseButtonDown(InputManager::MOUSE_BUTTON::LEFT)) { return; }
+	if (!g_InputManager->MouseButtonDown(MOUSE_BUTTON::LEFT)) { return; }
 
 	// --- Updating mouse positions --- //
-	Vector2 currMousePos = g_inputManager->MousePos();
+	Vector2 currMousePos = g_InputManager->MousePos();
 	Vector2 offset = Vector2(currMousePos.x - prevMousePos.x, prevMousePos.y - currMousePos.y);
 	prevMousePos = currMousePos;
 
@@ -85,16 +86,16 @@ void Camera::Look(float deltaTime) {
 
 Vector3 Camera::Zoom(float deltaTime) {
 	// --- Checking zoom parameters --- //
-	int wheelPos = g_inputManager->WheelPos();
+	int wheelPos = g_InputManager->WheelPos();
 	if (wheelPos > 0) zoomLevel++;
 	else if (wheelPos < 0) zoomLevel--;
 	return cameraPos + zoomLevel * zoomIncrement * forward;
 }
 
 void Camera::MouseRotation() {
-	if (!g_inputManager->MouseButtonDown(InputManager::MOUSE_BUTTON::LEFT)) { return; }
-	if (g_inputManager->MouseButtonPressed(InputManager::MOUSE_BUTTON::LEFT)) { return; }
-	Vector2 currMousePos = g_inputManager->MousePos();
+	if (!g_InputManager->MouseButtonDown(MOUSE_BUTTON::LEFT)) { return; }
+	if (g_InputManager->MouseButtonPressed(MOUSE_BUTTON::LEFT)) { return; }
+	Vector2 currMousePos = g_InputManager->MousePos();
 
 	Vector2 offset = Vector2(currMousePos.x - prevMousePos.x, prevMousePos.y - currMousePos.y);
 	prevMousePos = currMousePos;

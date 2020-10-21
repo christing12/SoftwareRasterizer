@@ -3,15 +3,11 @@ class Scene;
 class Renderer;
 class DisplayManager;
 
-// Singleton class design, decided the renderer itself shouldn't manage all this and only focus on rendering
 class RenderManager {
 public:
-	static RenderManager* Get() {
-		static RenderManager manager;
-		return &manager;
-	}
-
-	bool Init(int w, int h);
+	RenderManager(Ref<DisplayManager> displayManager, Ref<class InputManager> inputManager);
+	~RenderManager() {}
+	bool Init(int w, int h, const char* = "../data/chest.json");
 	void Shutdown();
 	void Update(float deltaTime);
 
@@ -21,12 +17,14 @@ public:
 
 	void Render();
 
-	bool wireframe = false;
+	bool wireframe			DEFAULT_INITIALIZER(false);
 private:
-	RenderManager() {}
-	~RenderManager() {}
 
-	Scene* m_currScene;
-	Renderer* m_renderer;
-	DisplayManager* g_displayManager;
+
+	Scene* m_currScene		DEFAULT_INITIALIZER(nullptr);
+	Ref<Renderer> _Renderer    DEFAULT_INITIALIZER(nullptr);
+
+
+	Ref<DisplayManager> g_DisplayManager;
+	Ref<class InputManager> g_InputManager;
 };

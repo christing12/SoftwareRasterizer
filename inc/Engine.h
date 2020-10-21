@@ -16,7 +16,8 @@ public:
 	void Shutdown();
 private:
 	bool isRunning = true;
-	DisplayManager* g_displayManager;
-	InputManager* g_inputManager;
-	RenderManager* g_renderManager;
+
+	Ref<DisplayManager> g_DisplayManager;
+	Ref<InputManager> g_InputManager;
+	Ref<RenderManager> g_RenderManager;
 };

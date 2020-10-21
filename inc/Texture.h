@@ -1,16 +1,19 @@
 #pragma once
 #include "EngineMath.h"
 #include "Buffer.h"
-#include <map>
-#include <string>
+
+
+enum class TEXTURE_TYPE : uint32_t {
+	RGB = 0,
+	XYZ,
+	BW
+};
 
 class Texture {
 public:
 	// identifier for pre-calculations
-	enum TexType {
-		RGB, XYZ, BW
-	};
-	Texture(const char* filename, TexType type = TexType::RGB);
+
+	Texture(const char* filename, TEXTURE_TYPE = TEXTURE_TYPE::RGB);
 	~Texture();
 
 	// loads image from filename
@@ -18,8 +21,8 @@ public:
 
 	// samples 3 floats in a row (RGB)
 	Vector3 Sample(float u, float v);
-	TexType type;
+	TEXTURE_TYPE type;
 private:
 	int width, height, channels;
-	Buffer<float>* texBuffer;
+	Scope<Buffer<float> > _textureBuffer;
 };

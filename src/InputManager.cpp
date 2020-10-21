@@ -118,21 +118,30 @@ bool InputManager::HandleEvent(SDL_Event* event) {
 	if (event->type == SDL_KEYDOWN) {
 		switch (event->key.keysym.sym)
 		{
-		case SDLK_ESCAPE:
-			std::cout << "Escaping!" << std::endl;
-			return false;
-		case SDLK_1:
-			RenderManager* rm;
-			rm = RenderManager::Get();
-			rm->wireframe = !rm->wireframe;
-			rm->Render();
-			break;
-		case SDLK_EQUALS:
-			RenderObj* obj = RenderManager::Get()->GetCurrScene()->GetRenderObjs()[0];
-			obj->rotSpeed = std::abs(obj->rotSpeed);
-			RenderManager::Get()->Update(1.f);
-			RenderManager::Get()->Render();
-			break;
+			case SDLK_ESCAPE:
+			{
+				std::cout << "Escaping!" << std::endl;
+				return false;
+			}
+			case SDLK_1:
+			{
+				//RenderManager* rm;
+				//rm = RenderManager::Get();
+				//rm->wireframe = !rm->wireframe;
+				//rm->Render();
+				break;
+			}
+
+			case SDLK_EQUALS:
+			{
+				//RenderObj* obj = RenderManager::Get()->GetCurrScene()->GetRenderObjs()[0];
+				//obj->rotSpeed = std::abs(obj->rotSpeed);
+				//RenderManager::Get()->Update(1.f);
+				//RenderManager::Get()->Render();
+				break;
+			}
+			default:
+				break;
 		}
 	}
 	else if(event->type == SDL_MOUSEWHEEL) {

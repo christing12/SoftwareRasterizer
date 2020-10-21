@@ -5,11 +5,8 @@
 // Singleton type design
 class DisplayManager {
 public:
-	static DisplayManager* Get() {
-		static DisplayManager manager;
-		return &manager;
-	}
-
+	DisplayManager() {}
+	~DisplayManager() = default;
 	const static int SCREEN_WIDTH = 800;
 	const static int SCREEN_HEIGHT = 800;
 
@@ -21,9 +18,6 @@ public:
 	SDL_PixelFormat* GetPixelFormat() { return m_surface->format; }
 
 private:
-	DisplayManager() {}
-	~DisplayManager() {}
-
 	SDL_Window* m_window;
 	SDL_Surface* m_surface;
 };

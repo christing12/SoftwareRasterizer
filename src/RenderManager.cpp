@@ -7,20 +7,26 @@
 #include "Scene.h"
 #include "DisplayManager.h"
 
-bool RenderManager::Init(int w, int h) {
-	m_renderer = Renderer::Get();
-	if (!m_renderer->Init(w, h)) {
+RenderManager::RenderManager(Ref<DisplayManager> displayManager, Ref<class InputManager> inputManager)
+	: g_DisplayManager(displayManager)
+	, g_InputManager(inputManager)
+{
+
+}
+
+bool RenderManager::Init(int w, int h, const char* initialScene) {
+	_Renderer = CreateRef<Renderer>(g_DisplayManager);
+	if (!_Renderer->Init(w, h)) {
 		std::cout << "SOMETHING WENT WRONG WITH RENDER MAANGER" << std::endl;
 		return false;
 	}
 	std::cout << "Render Manager being initted" << std::endl;
-	g_displayManager = DisplayManager::Get();
-	m_currScene = new Scene("../data/chest.json");
+	m_currScene = new Scene(initialScene, g_InputManager);
 	return true;
 }
 
 void RenderManager::Shutdown() {
-	m_renderer->Shutdown();
+	_Renderer->Shutdown();
 	delete m_currScene;
 }
 
@@ -31,11 +37,12 @@ void RenderManager::Update(float deltaTime) {
 
 // clears the zbuffer/back buffer, init rendering process, and update the display
 void RenderManager::Render() {
-	m_renderer->ClearBuffers();
+	_Renderer->ClearBuffers();
 	std::vector<RenderObj*> objs = m_currScene->GetVisibleObjs();
 
 	for (RenderObj* obj : objs) {
-		m_renderer->DrawObj(obj, m_currScene->GetCamera(), wireframe);
+		_Renderer->DrawObj(obj, m_currScene->GetCamera(), wireframe);
 	}
-	g_displayManager->UpdateDisplay(m_renderer->GetFrameBuffer());
+
+	g_DisplayManager->UpdateDisplay(_Renderer->GetFrameBuffer());
 }

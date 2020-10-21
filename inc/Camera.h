@@ -16,8 +16,8 @@ public:
 		bool Clipped(RenderObj* obj);
 	};
 
-	Camera();
-	Camera(Vector3 inPos);
+	Camera(Ref<InputManager> inputManager);
+	Camera(Vector3 inPos, Ref<InputManager> inputManager);
 	~Camera() {}
 
 	void Init();
@@ -40,20 +40,18 @@ public:
 		return !frustum.Clipped(obj);
 	}
 private:
-	InputManager* g_inputManager;
-	float fov = Math::ToRadians(50.f), aspectRatio, nearDist = 0.1f, farDist = 100.f;
-
-	const float cameraSpeed = 0.8f;
-	const float mouseSens = 0.1f;
-	float yaw = -90.f, pitch = 0.f;
-
-	int zoomLevel = 0;
-	float zoomIncrement = 0.1;
-
-	Vector2 prevMousePos;
 	void MouseRotation();
-
 	void Pan(float deltaTime);
 	void Look(float deltaTime);
 	Vector3 Zoom(float deltaTime);
+private:
+	Ref<InputManager> g_InputManager;
+
+	float fov = Math::ToRadians(50.f), aspectRatio, nearDist = 0.1f, farDist = 100.f;
+	const float cameraSpeed = 0.8f;
+	const float mouseSens = 0.1f;
+	float yaw = -90.f, pitch = 0.f;
+	int zoomLevel = 0;
+	float zoomIncrement = 0.1;
+	Vector2 prevMousePos;
 };

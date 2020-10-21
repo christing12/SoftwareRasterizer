@@ -37,7 +37,7 @@ void DisplayManager::Shutdown() {
 void DisplayManager::UpdateDisplay(Buffer<Uint32>* buffer) {
 	SDL_LockSurface(m_surface);
 
-	memcpy(m_surface->pixels, buffer->buffer, buffer->height * buffer->pitch);
+	memcpy(m_surface->pixels, buffer->buffer, buffer->height * buffer->stride);
 
 	SDL_UnlockSurface(m_surface);
 	SDL_UpdateWindowSurface(m_window);

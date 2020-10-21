@@ -3,6 +3,12 @@
 #include <iostream>
 // implementation of a templated buffer class for the Z-Buffer, Color Buffer, and Texture Buffers
 
+
+/*
+	Note: other types of buffers take in const void* as data and then a size
+	but I need to set individual pixels 
+	
+*/
 /*
 	NOTE: Much simpler to overload ()(int, int) than [][] 
 	- per https://stackoverflow.com/questions/6969881/operator-overload
@@ -11,12 +17,12 @@ template <class T>
 struct Buffer {
 public:
 	T* buffer;
-	int width, height, pitch;
+	int width, height, stride;
 
 	Buffer(int w, int h)
 		: width(w)
 		, height(h)
-		, pitch(w * sizeof(T))
+		, stride(w * sizeof(T))
 	{
 		buffer = new T[width * height];
 	}
@@ -24,6 +30,8 @@ public:
 	~Buffer() {
 		delete buffer;
 	}
+
+	
 
 	// assumes origin is in the top left
 	T& operator()(int x, int y) {
@@ -58,7 +66,7 @@ public:
 			}
 		}
 		else {
-			memset(buffer, 0xD, pitch * height);
+			memset(buffer, 0xD, stride * height);
 
 		}
 	}

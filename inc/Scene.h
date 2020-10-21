@@ -18,25 +18,25 @@ struct Light {
 class Scene {
 public:
 
-	Scene(const char* filename);
+	Scene(const char* filename, Ref<InputManager> inputManager);
 	~Scene();
 
 	void LoadScene(const char* filename);
 	void Update(float deltaTime);
 
 	Camera* GetCamera() { return m_mainCam; }
-	std::vector<RenderObj*>& GetRenderObjs() { return m_renderObjs; }
+	std::vector<Ref<RenderObj> >& GetRenderObjs() { return _renderObjs; }
 
 	void FrustumCulling();
 
 	std::vector<RenderObj*> GetVisibleObjs();
 private:
-	InputManager* g_inputManager;
+	Ref<InputManager> g_InputManager;
 
 	Camera* m_mainCam;
-	std::vector<RenderObj*> m_renderObjs;
+	std::vector<Ref<RenderObj> > _renderObjs;
 	std::vector<Light> m_lights;
 
 	void GetTextureFromJSON(Material* mat, std::string key, nlohmann::json jsonObj, std::string type);
-	Material* GetMaterialFromJSON(nlohmann::json matJSON);
+	Ref<Material> GetMaterialFromJSON(nlohmann::json matJSON);
 };

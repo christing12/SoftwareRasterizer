@@ -8,13 +8,14 @@ class Mesh;
 class RenderObj;
 class Camera;
 class Shader;
+class DisplayManager;
 
 class Renderer {
 public:
-	static Renderer* Get() {
-		static Renderer manager;
-		return &manager;
-	}
+
+	Renderer(Ref<DisplayManager> displayManager);
+	~Renderer() = default;
+
 
 	bool Init(int width, int height);
 	void Shutdown();
@@ -36,12 +37,11 @@ public:
 	void ClearBuffers();
 
 private: 
-	Renderer() {}
-	~Renderer() {}
+
 
 	int w, h;
 
-	class DisplayManager* g_displayManager;
+	Ref<DisplayManager> g_DiplayManager;
 	Buffer<Uint32>* m_frameBuffer;
 	Buffer<float>* m_zBuffer;
 

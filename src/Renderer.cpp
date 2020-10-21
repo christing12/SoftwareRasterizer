@@ -44,11 +44,16 @@ const int Renderer::gammaLUT[256] = { 0, 21, 28, 34, 39, 43, 46,
 		245, 245, 246, 246, 247, 247, 248, 248, 249, 249, 249, 250, 250,
 		251, 251, 252, 252, 253, 253, 254, 254, 255, 255 };
 
+Renderer::Renderer(Ref<DisplayManager> displayManager)
+	: g_DiplayManager(displayManager)
+{
+
+}
+
 // Inits the diff buffers
 bool Renderer::Init(int width, int height) {
 	w = width;
 	h = height;
-	g_displayManager = DisplayManager::Get();
 
 	m_frameBuffer = new Buffer<Uint32>(width, height);
 	m_zBuffer = new Buffer<float>(width, height);
@@ -92,11 +97,11 @@ void Renderer::DrawObj(RenderObj* obj, Camera* cam, bool wireframe) {
 	shader.M = obj->transform;
 	shader.N = Transpose(worldToObj);
 
-	shader.albedoT = mat->albedoTex;
-	shader.normalMap = mat->normalMap;
-	shader.ambientO = mat->ambientO;
-	shader.metal = mat->metal;
-	shader.rough = mat->rough;
+	shader.albedoT = mat->Albedo.get();
+	shader.normalMap = mat->NormalMap.get();
+	shader.ambientO = mat->AmbientOcclusion.get();
+	shader.metal = mat->Metalness.get();
+	shader.rough = mat->Roughness.get();
 
 	shader.cameraPos = cam->cameraPos;
 
@@ -325,5 +330,5 @@ Uint32 Renderer::GammaCorrect(Vector3 rgb) {
 
 // random color for testing
 Uint32 Renderer::RandColor() {
-	return SDL_MapRGB(g_displayManager->GetPixelFormat(), rand() % 255, rand() % 255, rand() % 255);
+	return SDL_MapRGB(g_DiplayManager->GetPixelFormat(), rand() % 255, rand() % 255, rand() % 255);
 }

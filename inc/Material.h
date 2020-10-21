@@ -6,19 +6,13 @@ class Shader;
 struct Material {
 	Material(std::string inType) : type(inType) {}
 	
-	~Material() {
-		if (albedoTex)	delete albedoTex;
-		if (normalMap)	delete normalMap;
-		if (ambientO)	delete ambientO;
-		if (metal)		delete metal;
-		if (rough)		delete rough;
-	}
+	~Material() = default;
 
 	std::string type;
 
-	Texture* albedoTex;
-	Texture* normalMap;
-	Texture* ambientO;
-	Texture* metal;
-	Texture* rough;
+	Ref<Texture> Albedo					DEFAULT_INITIALIZER(nullptr);
+	Ref<Texture> NormalMap				DEFAULT_INITIALIZER(nullptr);
+	Ref<Texture> AmbientOcclusion		DEFAULT_INITIALIZER(nullptr);
+	Ref<Texture> Metalness				DEFAULT_INITIALIZER(nullptr);
+	Ref<Texture> Roughness				DEFAULT_INITIALIZER(nullptr);
 };

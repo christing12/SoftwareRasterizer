@@ -6,12 +6,12 @@ class Material;
 
 class RenderObj {
 public:
-	RenderObj(Material* mat, Mesh* mesh);
-	~RenderObj();
+	RenderObj(Ref<Material> mat, Ref<Mesh> mesh);
+	~RenderObj() = default;
 
 	void Update(float deltaTime);
-	Mesh* GetMesh() { return m_mesh; }
-	Material* GetMat() { return m_mat;  }
+	Mesh* GetMesh() { return m_mesh.get(); }
+	Material* GetMat() { return m_mat.get();  }
 
 	Matrix4 transform = Matrix4::Identity;
 
@@ -22,6 +22,6 @@ private:
 	float angle = 0.0f;
 	Vector3 position = Vector3::Zero;
 
-	Material* m_mat;
-	Mesh* m_mesh;
+	Ref<Material> m_mat;
+	Ref<Mesh> m_mesh;
 };

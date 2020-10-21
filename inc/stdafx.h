@@ -5,3 +5,9 @@
 #include <map>
 
 #define STB_IMAGE_IMPLEMENTATION
+
+
+
+
+#include "EngineMath.h"
+#include "Core.h"
