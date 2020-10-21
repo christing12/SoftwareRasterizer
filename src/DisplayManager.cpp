@@ -1,8 +1,6 @@
 #include "stdafx.h"
 #include "DisplayManager.h"
-#include <iostream>
-#include <stdlib.h>
-#include <cstring>
+
 
 // Separate from constructor in case of restart
 bool DisplayManager::Init() {

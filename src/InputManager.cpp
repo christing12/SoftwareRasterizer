@@ -1,10 +1,12 @@
 #include "stdafx.h"
-#include <SDL.h>
+
 #include "InputManager.h"
-#include <iostream>
 #include "RenderManager.h"
 #include "RenderObj.h"
 #include "Scene.h"
+
+
+
 
 InputManager::InputManager() {
 	std::cout << "Input Manager being initted" << std::endl;

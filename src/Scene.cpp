@@ -6,8 +6,9 @@
 #include "Camera.h"
 #include "Texture.h"
 #include "Material.h"
-#include "nlohmann/json.hpp"
 #include "InputManager.h"
+
+#include "nlohmann/json.hpp"
 
 
 using json = nlohmann::json;

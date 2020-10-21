@@ -2,14 +2,12 @@
 #include "Engine.h"
 #include "DisplayManager.h"
 #include "InputManager.h"
-#include <iostream>
 #include "Renderer.h"
 #include "Mesh.h"
 #include "Buffer.h"
 #include "RenderManager.h"
-#include <chrono>
 
-#include <iostream>
+
 // Separate from the constructor in case the engine needs to restart
 bool Engine::Init() {
 	bool successful = true;

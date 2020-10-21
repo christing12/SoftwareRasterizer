@@ -1,8 +1,6 @@
 #include "stdafx.h"
 #include "Texture.h"
 #include "stb_image.h"
-#include <cmath>
-#include <iostream>
 
 
 Texture::Texture(const char* filename, TEXTURE_TYPE inType) : type(inType){

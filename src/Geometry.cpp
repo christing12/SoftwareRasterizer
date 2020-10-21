@@ -2,8 +2,6 @@
 #include "Geometry.h"
 #include "Mesh.h"
 
-#include <algorithm>
-
 AABB::AABB(Mesh* mesh) 
 	: min(std::numeric_limits<float>::max())
 	, max(std::numeric_limits<float>::min())

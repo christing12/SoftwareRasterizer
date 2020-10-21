@@ -1,6 +1,5 @@
 #include "stdafx.h"
-#include <vector>
-#include <iostream>
+
 #include "RenderManager.h"
 #include "Renderer.h"
 #include "RenderObj.h"

@@ -16,7 +16,6 @@ public:
 	Matrix4 transform = Matrix4::Identity;
 
 	float rotSpeed = 0.01f;
-
 	AABB bounds;
 private:
 	float angle = 0.0f;

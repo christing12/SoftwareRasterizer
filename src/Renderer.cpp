@@ -7,11 +7,6 @@
 #include "Camera.h"
 #include "Material.h"
 
-#include <iostream>
-#include <algorithm>
- #include <omp.h>
-
-
 
 
 // static variables initalization

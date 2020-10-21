@@ -1,10 +1,9 @@
 #include "stdafx.h"
+
 #include "Camera.h"
 #include "DisplayManager.h"
 #include "InputManager.h"
 #include "RenderObj.h"
-#include <iostream>
-#include <ctime>
 
 Camera::Camera(Ref<InputManager> inputManager)
 	: up(Vector3::UnitY)
