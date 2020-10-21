@@ -1,5 +1,5 @@
+#include "stdafx.h"
 #include "Texture.h"
-#define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include <cmath>
 #include <iostream>
@@ -75,11 +75,3 @@ Vector3 Texture::Sample(float u, float v) {
     return Vector3((*texBuffer)(i), (*texBuffer)(i + 1), (*texBuffer)(i + 2));
 
 }
-
-/*
-float Texture::SampleF(float u, float v) {
-    int x = int(u * (width - 1)) * channels;
-    int y = v * (height - 1);
-    return (*texBuffer)(x, y);
-}
-*/

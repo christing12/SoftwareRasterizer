@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "Renderer.h"
 #include "DisplayManager.h"
 #include "RenderObj.h"

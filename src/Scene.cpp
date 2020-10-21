@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Scene.h"
 #include "RenderObj.h"
 #include "Mesh.h"
@@ -11,7 +13,6 @@
 #include <fstream>
 #include <sstream>
 #include <map>
-
 using json = nlohmann::json;
 
 Scene::Scene(const char* filename) {

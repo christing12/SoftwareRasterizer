@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include <SDL.h>
 #include "InputManager.h"
 #include <iostream>

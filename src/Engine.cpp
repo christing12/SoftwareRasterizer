@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "Engine.h"
 #include "DisplayManager.h"
 #include "InputManager.h"

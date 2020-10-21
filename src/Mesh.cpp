@@ -1,5 +1,5 @@
+#include "stdafx.h"
 #include "Mesh.h"
-
 #include <iostream>
 #include <string>
 #include <fstream>

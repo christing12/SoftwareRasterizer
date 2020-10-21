@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "RenderObj.h"
 #include "Mesh.h"
 #include "Texture.h"

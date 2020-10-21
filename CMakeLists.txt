@@ -71,6 +71,7 @@ target_link_libraries(${TARGET} ${SDL2_LIBRARY})
 
 
 # COPYING ASSETS TO THE RIGHT FOLDER
+# this might not be working
 set(ASSETS_SRC "${CMAKE_SOURCE_DIR}/data")
 set(ASSETS_DST "$<TARGET_FILE_DIR:${TARGET}>/data")
 if (WIN32)

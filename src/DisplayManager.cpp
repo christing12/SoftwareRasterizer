@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "DisplayManager.h"
 #include <iostream>
 #include <stdlib.h>
